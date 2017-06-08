@@ -157,11 +157,15 @@ class GoBoard(object):
     def getEmptyBoardList():
         return [[0] * 19 for i in range(19)]
 
-board = GoBoard()
-value = 1
-while True:
-    x = raw_input('x: ')
-    y = raw_input('y: ')
-    if board.move(int(x), int(y), value):
-        value = - value
-    board.printBoard()
+def main():
+    board = GoBoard()
+    value = 1
+    while True:
+        x = raw_input('x: ')
+        y = raw_input('y: ')
+        if board.move(int(x), int(y), value):
+            value = - value
+        board.printBoard()
+
+if __name__ == '__main__':
+    main()
