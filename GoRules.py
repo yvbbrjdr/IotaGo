@@ -6,6 +6,7 @@ from Queue import Queue
 class GoBoard(object):
 
     def __init__(self, boardList = None):
+        self.__fourHistory = [None] * 4
         self.setBoardList(GoBoard.getEmptyBoardList())
         if boardList != None:
             self.setBoardList(boardList)
@@ -96,7 +97,7 @@ class GoBoard(object):
                         ret[spot[0]][spot[1]] = bfs[0]
         return ret
 
-    def takeSpot(self, exception = None):
+    def captureSpot(self, exception = None):
         ret = GoBoard.getEmptyBoardList()
         liberty = self.countLiberty()
         for i in range(19):
@@ -111,8 +112,8 @@ class GoBoard(object):
             print "GoBoard: error: invalid exception"
         return ret
 
-    def take(self, exception = None):
-        spot = self.takeSpot(exception)
+    def capture(self, exception = None):
+        spot = self.captureSpot(exception)
         for i in range(19):
             for j in range(19):
                 if spot[i][j] != 0:
@@ -133,12 +134,13 @@ class GoBoard(object):
             return False
         original = self.getBoardList()
         self.setSpot(x, y, value)
-        self.take((x, y))
-        self.take()
+        self.capture((x, y))
+        self.capture()
         if self.__boardList[x][y] == 0:
             print "GoBoard: error: invalid move"
             self.setBoardList(original)
             return False
+        self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, value)
         return True
 
     @staticmethod
@@ -156,6 +158,64 @@ class GoBoard(object):
     @staticmethod
     def getEmptyBoardList():
         return [[0] * 19 for i in range(19)]
+
+    def featureBlack(self):
+        ret = self.getBoardList()
+        for i in range(19):
+            for j in range(19):
+                if ret[i][j] == -1:
+                    ret[i][j] = 0
+        return ret
+
+    def featureWhite(self):
+        ret = self.getBoardList()
+        for i in range(19):
+            for j in range(19):
+                if ret[i][j] == 1:
+                    ret[i][j] = 0
+                elif ret[i][j] == -1:
+                    ret[i][j] = 1
+        return ret
+
+    def featureCurrent(self):
+        if self.__fourHistory[3] == None:
+            return GoBoard.getEmptyBoardList()
+        elif self.__fourHistory[3][2] == 1:
+            return self.featureWhite()
+        elif self.__fourHistory[3][2] == -1:
+            return self.featureBlack()
+
+    def featureOpponent(self):
+        if self.__fourHistory[3] == None:
+            return GoBoard.getEmptyBoardList()
+        elif self.__fourHistory[3][2] == 1:
+            return self.featureBlack()
+        elif self.__fourHistory[3][2] == -1:
+            return self.featureWhite()
+
+    def featureEmpty(self):
+        return GoBoard.getEmptyBoardList()
+
+    def featureAllOne(self):
+        return [[1] * 19 for i in range(19)]
+
+    def featureFourLiberty(self):
+        pass
+
+    def featureFourHistory(self):
+        ret = []
+        for i in range(4):
+            mat = GoBoard.getEmptyBoardList()
+            if self.__fourHistory[i] != None:
+                mat[self.__fourHistory[i][0]][self.__fourHistory[i][1]] = 1
+            ret.append(mat)
+        return ret
+
+    def featureIllegal(self):
+        pass
+
+    def featureFourCapture(self):
+        pass
 
 def main():
     board = GoBoard()
