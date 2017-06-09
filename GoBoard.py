@@ -65,15 +65,15 @@ class GoBoard(object):
     def bfsFloodFill(self, x, y):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
             print "GoBoard: bfsFloodFill: error: invalid x coordinate"
-            return (0, [])
+            return ([], [])
         if not isinstance(y, int) or not 0 <= y < GoBoard.size:
             print "GoBoard: bfsFloodFill: error: invalid y coordinate"
-            return (0, [])
+            return ([], [])
         color = self.__boardList[x][y]
         if color == GoBoard.space:
-            return (0, [])
-        spot = []
-        liberty = 0
+            return ([], [])
+        stonespot = []
+        libertyspot = []
         vis = GoBoard.getEmptyBoardList()
         que = Queue()
         que.put((x, y))
@@ -83,44 +83,50 @@ class GoBoard(object):
                 continue
             vis[cur[0]][cur[1]] = 1
             if self.__boardList[cur[0]][cur[1]] == GoBoard.space:
-                liberty += 1
+                libertyspot.append((cur[0], cur[1]))
             else:
-                spot.append((cur[0], cur[1]))
+                stonespot.append((cur[0], cur[1]))
                 for d in GoBoard.dxdy:
                     que.put((cur[0] + d[0], cur[1] + d[1]))
-        return (liberty, spot)
+        return (stonespot, libertyspot)
 
     def countLiberty(self):
-        ret = GoBoard.getEmptyBoardList()
+        ret = [[-1] * GoBoard.size for i in range(GoBoard.size)]
         for i in range(GoBoard.size):
             for j in range(GoBoard.size):
-                if ret[i][j] == 0 and self.__boardList[i][j] != GoBoard.space:
+                if ret[i][j] == -1 and self.__boardList[i][j] != GoBoard.space:
                     bfs = self.bfsFloodFill(i, j)
-                    for spot in bfs[1]:
-                        ret[spot[0]][spot[1]] = bfs[0]
+                    liberty = len(bfs[1])
+                    for spot in bfs[0]:
+                        ret[spot[0]][spot[1]] = liberty
+                elif self.__boardList[i][j] == GoBoard.space:
+                    ret[i][j] = 0
         return ret
 
     def captureSpot(self, exception = None):
-        ret = GoBoard.getEmptyBoardList()
+        ret = []
+        mat = GoBoard.getEmptyBoardList()
         liberty = self.countLiberty()
         for i in range(GoBoard.size):
             for j in range(GoBoard.size):
                 if liberty[i][j] == 0 and self.__boardList[i][j] != GoBoard.space:
-                    ret[i][j] = self.__boardList[i][j]
-        if isinstance(exception, tuple) and len(exception) == 2 and isinstance(exception[0], int) and isinstance(exception[1], int):
+                    mat[i][j] = 1
+        if isinstance(exception, tuple) and len(exception) == 2:
             god = self.bfsFloodFill(exception[0], exception[1])
-            for spot in god[1]:
-                ret[spot[0]][spot[1]] = 0
+            for spot in god[0]:
+                mat[spot[0]][spot[1]] = 0
         elif exception != None:
             print "GoBoard: captureSpot: error: invalid exception"
+        for i in range(GoBoard.size):
+            for j in range(GoBoard.size):
+                if mat[i][j] == 1:
+                    ret.append((i, j))
         return ret
 
     def capture(self, exception = None):
-        spot = self.captureSpot(exception)
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
-                if spot[i][j] != 0:
-                    self.__boardList[i][j] = GoBoard.space
+        spots = self.captureSpot(exception)
+        for spot in spots:
+            self.__boardList[spot[0]][spot[1]] = GoBoard.space
 
     def isValidMove(self, x, y, color):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size or not isinstance(y, int) or not 0 <= y < GoBoard.size or not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black or self.__boardList[x][y] != GoBoard.space:
@@ -133,7 +139,7 @@ class GoBoard(object):
         tempBoard = GoBoard(self.__boardList)
         tempBoard.setSpot(x, y, color)
         tempBoard.capture((x, y))
-        if tempBoard.bfsFloodFill(x, y)[0] == 0:
+        if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
             return False
         return True
 
@@ -161,7 +167,7 @@ class GoBoard(object):
         tempBoard = GoBoard(self.__boardList)
         tempBoard.setSpot(x, y, color)
         tempBoard.capture((x, y))
-        if tempBoard.bfsFloodFill(x, y)[0] == 0:
+        if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
             print "GoBoard: move: error: invalid move"
             return False
         self.setBoardList(tempBoard.getBoardList())
@@ -225,7 +231,7 @@ class GoBoard(object):
         return [[1] * GoBoard.size for i in range(GoBoard.size)]
 
     def featureFourLiberty(self):
-        ret = [GoBoard.getEmptyBoardList()] * 8
+        ret = [GoBoard.getEmptyBoardList() for i in range(8)]
         color = GoBoard.black
         if self.__fourHistory[3] != None:
             color = - self.__fourHistory[3][2]
@@ -250,6 +256,7 @@ class GoBoard(object):
                         ret[6][i][j] = 1
                     elif liberty[i][j] >= 4:
                         ret[7][i][j] = 1
+        return ret
 
     def featureFourHistory(self):
         ret = []
@@ -272,18 +279,51 @@ class GoBoard(object):
         return ret
 
     def featureFourCapture(self):
-        pass
+        ret = [GoBoard.getEmptyBoardList() for i in range(4)]
+        color = GoBoard.black
+        if self.__fourHistory[3] != None:
+            color = - self.__fourHistory[3][2]
+        vis = GoBoard.getEmptyBoardList()
+        for i in range(GoBoard.size):
+            for j in range(GoBoard.size):
+                if vis[i][j] == 0 and self.__boardList[i][j] == - color:
+                    bfs = self.bfsFloodFill(i, j)
+                    if len(bfs[1]) == 1:
+                        x = bfs[1][0][0]
+                        y = bfs[1][0][1]
+                        self.setSpot(x, y, color)
+                        count = len(self.captureSpot((x, y)))
+                        if count == 1:
+                            ret[0][x][y] = 1
+                        elif count == 2:
+                            ret[1][x][y] = 1
+                        elif count == 3:
+                            ret[2][x][y] = 1
+                        elif count >= 4:
+                            ret[3][x][y] = 1
+                        self.setSpot(x, y, GoBoard.space)
+                    for spot in bfs[0]:
+                        vis[spot[0]][spot[1]] = 1
+        return ret
 
-def main():
-    GoBoard.size = 5
+def test():
+    GoBoard.size = 9
     board = GoBoard()
     color = GoBoard.black
     while True:
+        board.printBoard()
         x = raw_input('x: ')
         y = raw_input('y: ')
         if board.move(int(x), int(y), color):
             color = - color
-        board.printBoard()
 
 if __name__ == '__main__':
-    main()
+    test()
+
+def rPrint(arg):
+    if isinstance(arg, list):
+        for item in arg:
+            rPrint(item)
+        print
+    else:
+        print arg,
