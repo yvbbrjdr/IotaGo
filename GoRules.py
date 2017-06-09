@@ -32,7 +32,7 @@ class GoBoard(object):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
             print "GoBoard: error: invalid x coordinate"
             return False
-        if not isinstance(y, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
             print "GoBoard: error: invalid y coordinate"
             return False
         if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
@@ -45,7 +45,7 @@ class GoBoard(object):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
             print "GoBoard: error: invalid x coordinate"
             return None
-        if not isinstance(y, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
             print "GoBoard: error: invalid y coordinate"
             return None
         return self.__boardList[x][y]
@@ -67,7 +67,7 @@ class GoBoard(object):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
             print "GoBoard: error: invalid x coordinate"
             return (0, [])
-        if not isinstance(y, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
             print "GoBoard: error: invalid y coordinate"
             return (0, [])
         color = self.__boardList[x][y]
@@ -123,11 +123,24 @@ class GoBoard(object):
                 if spot[i][j] != 0:
                     self.__boardList[i][j] = GoBoard.space
 
+    def isValidMove(self, x, y, value):
+        if not isinstance(x, int) or not 0 <= x < GoBoard.size or not isinstance(y, int) or not 0 <= y < GoBoard.size or not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black or self.__boardList[x][y] != GoBoard.space:
+            return False
+        original = self.getBoardList()
+        self.setSpot(x, y, value)
+        self.capture((x, y))
+        self.capture()
+        if self.__boardList[x][y] == GoBoard.space:
+            self.setBoardList(original)
+            return False
+        self.setBoardList(original)
+        return True
+
     def move(self, x, y, value):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
             print "GoBoard: error: invalid x coordinate"
             return False
-        if not isinstance(y, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
             print "GoBoard: error: invalid y coordinate"
             return False
         if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
@@ -216,7 +229,15 @@ class GoBoard(object):
         return ret
 
     def featureIllegal(self):
-        pass
+        ret = GoBoard.getEmptyBoardList()
+        color = GoBoard.black
+        if self.__fourHistory[3] != None:
+            color = - self.__fourHistory[3][2]
+        for i in range(GoBoard.size):
+            for j in range(GoBoard.size):
+                if not self.isValidMove(i, j, color):
+                    ret[i][j] = 1
+        return ret
 
     def featureFourCapture(self):
         pass
