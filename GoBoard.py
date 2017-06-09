@@ -225,7 +225,31 @@ class GoBoard(object):
         return [[1] * GoBoard.size for i in range(GoBoard.size)]
 
     def featureFourLiberty(self):
-        pass
+        ret = [GoBoard.getEmptyBoardList()] * 8
+        color = GoBoard.black
+        if self.__fourHistory[3] != None:
+            color = - self.__fourHistory[3][2]
+        liberty = self.countLiberty()
+        for i in range(GoBoard.size):
+            for j in range(GoBoard.size):
+                if self.__boardList[i][j] == color:
+                    if liberty[i][j] == 1:
+                        ret[0][i][j] = 1
+                    elif liberty[i][j] == 2:
+                        ret[1][i][j] = 1
+                    elif liberty[i][j] == 3:
+                        ret[2][i][j] = 1
+                    elif liberty[i][j] >= 4:
+                        ret[3][i][j] = 1
+                elif self.__boardList[i][j] == - color:
+                    if liberty[i][j] == 1:
+                        ret[4][i][j] = 1
+                    elif liberty[i][j] == 2:
+                        ret[5][i][j] = 1
+                    elif liberty[i][j] == 3:
+                        ret[6][i][j] = 1
+                    elif liberty[i][j] >= 4:
+                        ret[7][i][j] = 1
 
     def featureFourHistory(self):
         ret = []
