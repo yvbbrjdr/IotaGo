@@ -14,7 +14,7 @@ class GoBoard(object):
 
     def __init__(self, boardList = None):
         self.__fourHistory = [None] * 4
-        if boardList != None and not self.setBoardList(boardList):
+        if boardList == None or not self.setBoardList(boardList):
             self.setBoardList(GoBoard.getEmptyBoardList())
 
     def setBoardList(self, boardList):
@@ -125,14 +125,16 @@ class GoBoard(object):
     def isValidMove(self, x, y, color):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size or not isinstance(y, int) or not 0 <= y < GoBoard.size or not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black or self.__boardList[x][y] != GoBoard.space:
             return False
-        original = self.getBoardList()
-        self.setSpot(x, y, color)
-        self.capture((x, y))
-        self.capture()
-        if self.__boardList[x][y] == GoBoard.space:
-            self.setBoardList(original)
+        for k in GoBoard.dxdy:
+            i = x + k[0]
+            j = y + k[1]
+            if 0 <= i < GoBoard.size and 0 <= j < GoBoard.size and self.__boardList[i][j] == GoBoard.space:
+                return True
+        tempBoard = GoBoard(self.__boardList)
+        tempBoard.setSpot(x, y, color)
+        tempBoard.capture((x, y))
+        if tempBoard.bfsFloodFill(x, y)[0] == 0:
             return False
-        self.setBoardList(original)
         return True
 
     def move(self, x, y, color):
@@ -148,14 +150,21 @@ class GoBoard(object):
         if self.__boardList[x][y] != GoBoard.space:
             print "GoBoard: move: error: occupied spot"
             return False
-        original = self.getBoardList()
-        self.setSpot(x, y, color)
-        self.capture((x, y))
-        self.capture()
-        if self.__boardList[x][y] == GoBoard.space:
+        for k in GoBoard.dxdy:
+            i = x + k[0]
+            j = y + k[1]
+            if 0 <= i < GoBoard.size and 0 <= j < GoBoard.size and self.__boardList[i][j] == GoBoard.space:
+                self.setSpot(x, y, color)
+                self.capture()
+                self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
+                return True
+        tempBoard = GoBoard(self.__boardList)
+        tempBoard.setSpot(x, y, color)
+        tempBoard.capture((x, y))
+        if tempBoard.bfsFloodFill(x, y)[0] == 0:
             print "GoBoard: move: error: invalid move"
-            self.setBoardList(original)
             return False
+        self.setBoardList(tempBoard.getBoardList())
         self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
         return True
 
