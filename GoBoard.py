@@ -20,7 +20,7 @@ class GoBoard(object):
 
     def setBoardList(self, boardList):
         if not GoBoard.isValidBoardList(boardList):
-            print "GoBoard: error: invalid boardList"
+            print "GoBoard: setBoardList: error: invalid boardList"
             return False
         self.__boardList = deepcopy(boardList)
         return True
@@ -30,23 +30,23 @@ class GoBoard(object):
 
     def setSpot(self, x, y, value):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
-            print "GoBoard: error: invalid x coordinate"
+            print "GoBoard: setSpot: error: invalid x coordinate"
             return False
         if not isinstance(y, int) or not 0 <= y < GoBoard.size:
-            print "GoBoard: error: invalid y coordinate"
+            print "GoBoard: setSpot: error: invalid y coordinate"
             return False
         if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
-            print "GoBoard: error: invalid value"
+            print "GoBoard: setSpot: error: invalid value"
             return False
         self.__boardList[x][y] = value
         return True
 
     def getSpot(self, x, y):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
-            print "GoBoard: error: invalid x coordinate"
+            print "GoBoard: getSpot: error: invalid x coordinate"
             return None
         if not isinstance(y, int) or not 0 <= y < GoBoard.size:
-            print "GoBoard: error: invalid y coordinate"
+            print "GoBoard: getSpot: error: invalid y coordinate"
             return None
         return self.__boardList[x][y]
 
@@ -65,10 +65,10 @@ class GoBoard(object):
 
     def bfsFloodFill(self, x, y):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
-            print "GoBoard: error: invalid x coordinate"
+            print "GoBoard: bfsFloodFill: error: invalid x coordinate"
             return (0, [])
         if not isinstance(y, int) or not 0 <= y < GoBoard.size:
-            print "GoBoard: error: invalid y coordinate"
+            print "GoBoard: bfsFloodFill: error: invalid y coordinate"
             return (0, [])
         color = self.__boardList[x][y]
         if color == GoBoard.space:
@@ -113,7 +113,7 @@ class GoBoard(object):
             for spot in god[1]:
                 ret[spot[0]][spot[1]] = 0
         elif exception != None:
-            print "GoBoard: error: invalid exception"
+            print "GoBoard: captureSpot: error: invalid exception"
         return ret
 
     def capture(self, exception = None):
