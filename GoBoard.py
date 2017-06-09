@@ -306,6 +306,18 @@ class GoBoard(object):
                         vis[spot[0]][spot[1]] = 1
         return ret
 
+    def allFeatures(self):
+        ret = []
+        ret.append(self.featureCurrent())
+        ret.append(self.featureOpponent())
+        ret.append(self.featureEmpty())
+        ret.append(self.featureAllOne())
+        ret += self.featureFourLiberty()
+        ret += self.featureFourHistory()
+        ret.append(self.featureIllegal())
+        ret += self.featureFourCapture()
+        return ret
+
 def test():
     GoBoard.size = 9
     board = GoBoard()
