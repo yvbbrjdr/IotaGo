@@ -14,9 +14,8 @@ class GoBoard(object):
 
     def __init__(self, boardList = None):
         self.__fourHistory = [None] * 4
-        self.setBoardList(GoBoard.getEmptyBoardList())
-        if boardList != None:
-            self.setBoardList(boardList)
+        if boardList != None and not self.setBoardList(boardList):
+            self.setBoardList(GoBoard.getEmptyBoardList())
 
     def setBoardList(self, boardList):
         if not GoBoard.isValidBoardList(boardList):
@@ -138,23 +137,23 @@ class GoBoard(object):
 
     def move(self, x, y, color):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
-            print "GoBoard: error: invalid x coordinate"
+            print "GoBoard: move: error: invalid x coordinate"
             return False
         if not isinstance(y, int) or not 0 <= y < GoBoard.size:
-            print "GoBoard: error: invalid y coordinate"
+            print "GoBoard: move: error: invalid y coordinate"
             return False
         if not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black:
-            print "GoBoard: error: invalid color"
+            print "GoBoard: move: error: invalid color"
             return False
         if self.__boardList[x][y] != GoBoard.space:
-            print "GoBoard: error: occupied spot"
+            print "GoBoard: move: error: occupied spot"
             return False
         original = self.getBoardList()
         self.setSpot(x, y, color)
         self.capture((x, y))
         self.capture()
         if self.__boardList[x][y] == GoBoard.space:
-            print "GoBoard: error: invalid move"
+            print "GoBoard: move: error: invalid move"
             self.setBoardList(original)
             return False
         self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
