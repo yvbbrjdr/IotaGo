@@ -123,11 +123,11 @@ class GoBoard(object):
                 if spot[i][j] != 0:
                     self.__boardList[i][j] = GoBoard.space
 
-    def isValidMove(self, x, y, value):
-        if not isinstance(x, int) or not 0 <= x < GoBoard.size or not isinstance(y, int) or not 0 <= y < GoBoard.size or not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black or self.__boardList[x][y] != GoBoard.space:
+    def isValidMove(self, x, y, color):
+        if not isinstance(x, int) or not 0 <= x < GoBoard.size or not isinstance(y, int) or not 0 <= y < GoBoard.size or not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black or self.__boardList[x][y] != GoBoard.space:
             return False
         original = self.getBoardList()
-        self.setSpot(x, y, value)
+        self.setSpot(x, y, color)
         self.capture((x, y))
         self.capture()
         if self.__boardList[x][y] == GoBoard.space:
@@ -136,28 +136,28 @@ class GoBoard(object):
         self.setBoardList(original)
         return True
 
-    def move(self, x, y, value):
+    def move(self, x, y, color):
         if not isinstance(x, int) or not 0 <= x < GoBoard.size:
             print "GoBoard: error: invalid x coordinate"
             return False
         if not isinstance(y, int) or not 0 <= y < GoBoard.size:
             print "GoBoard: error: invalid y coordinate"
             return False
-        if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
-            print "GoBoard: error: invalid value"
+        if not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black:
+            print "GoBoard: error: invalid color"
             return False
         if self.__boardList[x][y] != GoBoard.space:
             print "GoBoard: error: occupied spot"
             return False
         original = self.getBoardList()
-        self.setSpot(x, y, value)
+        self.setSpot(x, y, color)
         self.capture((x, y))
         self.capture()
         if self.__boardList[x][y] == GoBoard.space:
             print "GoBoard: error: invalid move"
             self.setBoardList(original)
             return False
-        self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, value)
+        self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
         return True
 
     @staticmethod
@@ -245,12 +245,12 @@ class GoBoard(object):
 def main():
     GoBoard.size = 5
     board = GoBoard()
-    value = GoBoard.black
+    color = GoBoard.black
     while True:
         x = raw_input('x: ')
         y = raw_input('y: ')
-        if board.move(int(x), int(y), value):
-            value = - value
+        if board.move(int(x), int(y), color):
+            color = - color
         board.printBoard()
 
 if __name__ == '__main__':
