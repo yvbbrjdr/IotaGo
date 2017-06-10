@@ -142,7 +142,8 @@ class GoBoard(object):
             j = y + k[1]
             if 0 <= i < self.__size and 0 <= j < self.__size and self.__boardList[i][j] == GoBoard.space:
                 return True
-        tempBoard = GoBoard(self.__boardList)
+        tempBoard = GoBoard(self.__size)
+        tempBoard.setBoardList(self.__boardList)
         tempBoard.setSpot(x, y, color)
         tempBoard.capture((x, y))
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
@@ -173,7 +174,8 @@ class GoBoard(object):
                 self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
                 self.__hashHistory.append(self.hash())
                 return True
-        tempBoard = GoBoard(self.__boardList)
+        tempBoard = GoBoard(self.__size)
+        tempBoard.setBoardList(self.__boardList)
         tempBoard.setSpot(x, y, color)
         tempBoard.capture((x, y))
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
