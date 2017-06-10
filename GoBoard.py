@@ -311,20 +311,6 @@ class GoBoard(object):
         ret += self.featureFourCapture()
         return ret
 
-def test():
-    GoBoard.size = 9
-    board = GoBoard()
-    color = GoBoard.black
-    while True:
-        board.printBoard()
-        x = raw_input('x: ')
-        y = raw_input('y: ')
-        if board.move(int(x), int(y), color):
-            color = - color
-
-if __name__ == '__main__':
-    test()
-
 def rPrint(arg):
     if isinstance(arg, list):
         for item in arg:
@@ -332,3 +318,33 @@ def rPrint(arg):
         print
     else:
         print arg,
+
+def test():
+    GoBoard.size = int(raw_input('Board size: '))
+    board = GoBoard()
+    color = GoBoard.black
+    while True:
+        board.printBoard()
+        if color == GoBoard.black:
+            print "Black's turn"
+        else:
+            print "White's turn"
+        x = raw_input('x: ')
+        y = raw_input('y: ')
+        if x == '' and y == '':
+            color = - color
+            continue
+        if board.move(int(x), int(y), color):
+            board.printBoard()
+            while True:
+                feature = raw_input('Feature: ')
+                if feature == '':
+                    break
+                if hasattr(board, 'feature' + feature):
+                    rPrint(getattr(board, 'feature' + feature)())
+                else:
+                    print "Feature not found!"
+            color = - color
+
+if __name__ == '__main__':
+    test()
