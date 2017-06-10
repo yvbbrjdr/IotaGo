@@ -3,6 +3,7 @@
 from copy import deepcopy
 from Queue import Queue
 from cPickle import dump, load
+from colorama import init, Fore, Style
 
 class GoBoard(object):
 
@@ -10,6 +11,7 @@ class GoBoard(object):
     space = 0
     white = -1
     printDic = {space : '.', black : 'B', white : 'W'}
+    colorDic = {space : Fore.WHITE + Style.BRIGHT, black : Fore.RED + Style.BRIGHT, white : Fore.WHITE + Style.BRIGHT, 'last' : Fore.CYAN + Style.BRIGHT, 'reset' : Style.RESET_ALL}
     dxdy = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
     def __init__(self, size = 19):
@@ -85,10 +87,16 @@ class GoBoard(object):
         return self.__boardList[x][y]
 
     def printBoard(self):
-        for row in self.__boardList:
-            for spot in row:
-                print GoBoard.printDic[spot],
-            print
+        print GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+'
+        for i in range(self.__size):
+            print GoBoard.colorDic[GoBoard.space] + '|',
+            for j in range(self.__size):
+                if self.__fourHistory[3] != None and self.__fourHistory[3][0] == i and self.__fourHistory[3][1] == j:
+                    print GoBoard.colorDic['last'] + GoBoard.printDic[self.__boardList[i][j]],
+                else:
+                    print GoBoard.colorDic[self.__boardList[i][j]] + GoBoard.printDic[self.__boardList[i][j]],
+            print GoBoard.colorDic[GoBoard.space] + '|'
+        print GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+' + Style.RESET_ALL
 
     def hash(self):
         s = ''
