@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from Queue import Queue
+from cPickle import dump, load
 
 class GoBoard(object):
 
@@ -19,6 +20,22 @@ class GoBoard(object):
         self.__fourHistory = [None] * 4
         self.__hashHistory = []
         self.__boardList = self.getEmptyBoardList()
+
+    def save(self, filename):
+        if not isinstance(filename, str):
+            print "GoBoard: save: error: invalid filename"
+            return False
+        with open(filename, "w") as f:
+            dump(self.__dict__, f, -1)
+        return True
+
+    def load(self, filename):
+        if not isinstance(filename, str):
+            print "GoBoard: load: error: invalid filename"
+            return False
+        with open(filename, "r") as f:
+            self.__dict__.update(load(f))
+        return True
 
     def getSize(self):
         return self.__size
