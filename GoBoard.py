@@ -18,7 +18,7 @@ class GoBoard(object):
         self.__size = size
         self.__fourHistory = [None] * 4
         self.__hashHistory = []
-        self.setBoardList(self.getEmptyBoardList())
+        self.__boardList = self.getEmptyBoardList()
 
     def getSize(self):
         return self.__size
@@ -184,7 +184,7 @@ class GoBoard(object):
         if tempBoard.hash() in self.__hashHistory:
             print "GoBoard: move: error: reappeared state"
             return False
-        self.setBoardList(tempBoard.getBoardList())
+        self.__boardList = tempBoard.getBoardList()
         self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
         self.__hashHistory.append(self.hash())
         return True
