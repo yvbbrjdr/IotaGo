@@ -5,21 +5,26 @@ from Queue import Queue
 
 class GoBoard(object):
 
-    size = 19
     black = 1
     space = 0
     white = -1
     printDic = {space : '.', black : 'B', white : 'W'}
     dxdy = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-    def __init__(self, boardList = None):
+    def __init__(self, size = 19):
+        if not isinstance(size, int) or size <= 0:
+            print "GoBoard: __init__: error: invalid size"
+            return
+        self.__size = size
         self.__fourHistory = [None] * 4
         self.__hashHistory = []
-        if boardList == None or not self.setBoardList(boardList):
-            self.setBoardList(GoBoard.getEmptyBoardList())
+        self.setBoardList(self.getEmptyBoardList())
+
+    def getSize(self):
+        return self.__size
 
     def setBoardList(self, boardList):
-        if not GoBoard.isValidBoardList(boardList):
+        if not self.isValidBoardList(boardList):
             print "GoBoard: setBoardList: error: invalid boardList"
             return False
         self.__boardList = deepcopy(boardList)
@@ -29,10 +34,10 @@ class GoBoard(object):
         return deepcopy(self.__boardList)
 
     def setSpot(self, x, y, value):
-        if not isinstance(x, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(x, int) or not 0 <= x < self.__size:
             print "GoBoard: setSpot: error: invalid x coordinate"
             return False
-        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < self.__size:
             print "GoBoard: setSpot: error: invalid y coordinate"
             return False
         if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
@@ -42,10 +47,10 @@ class GoBoard(object):
         return True
 
     def getSpot(self, x, y):
-        if not isinstance(x, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(x, int) or not 0 <= x < self.__size:
             print "GoBoard: getSpot: error: invalid x coordinate"
             return None
-        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < self.__size:
             print "GoBoard: getSpot: error: invalid y coordinate"
             return None
         return self.__boardList[x][y]
@@ -64,10 +69,10 @@ class GoBoard(object):
         return long(s, 3)
 
     def bfsFloodFill(self, x, y):
-        if not isinstance(x, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(x, int) or not 0 <= x < self.__size:
             print "GoBoard: bfsFloodFill: error: invalid x coordinate"
             return ([], [])
-        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < self.__size:
             print "GoBoard: bfsFloodFill: error: invalid y coordinate"
             return ([], [])
         color = self.__boardList[x][y]
@@ -75,12 +80,12 @@ class GoBoard(object):
             return ([], [])
         stonespot = []
         libertyspot = []
-        vis = GoBoard.getEmptyBoardList()
+        vis = self.getEmptyBoardList()
         que = Queue()
         que.put((x, y))
         while not que.empty():
             cur = que.get()
-            if not 0 <= cur[0] < GoBoard.size or not 0 <= cur[1] < GoBoard.size or self.__boardList[cur[0]][cur[1]] == - color or vis[cur[0]][cur[1]] == 1:
+            if not 0 <= cur[0] < self.__size or not 0 <= cur[1] < self.__size or self.__boardList[cur[0]][cur[1]] == - color or vis[cur[0]][cur[1]] == 1:
                 continue
             vis[cur[0]][cur[1]] = 1
             if self.__boardList[cur[0]][cur[1]] == GoBoard.space:
@@ -92,9 +97,9 @@ class GoBoard(object):
         return (stonespot, libertyspot)
 
     def countLiberty(self):
-        ret = [[-1] * GoBoard.size for i in range(GoBoard.size)]
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
+        ret = [[-1] * self.__size for i in range(self.__size)]
+        for i in range(self.__size):
+            for j in range(self.__size):
                 if ret[i][j] == -1 and self.__boardList[i][j] != GoBoard.space:
                     bfs = self.bfsFloodFill(i, j)
                     liberty = len(bfs[1])
@@ -106,10 +111,10 @@ class GoBoard(object):
 
     def captureSpot(self, exception = None):
         ret = []
-        mat = GoBoard.getEmptyBoardList()
+        mat = self.getEmptyBoardList()
         liberty = self.countLiberty()
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
+        for i in range(self.__size):
+            for j in range(self.__size):
                 if liberty[i][j] == 0 and self.__boardList[i][j] != GoBoard.space:
                     mat[i][j] = 1
         if isinstance(exception, tuple) and len(exception) == 2:
@@ -118,8 +123,8 @@ class GoBoard(object):
                 mat[spot[0]][spot[1]] = 0
         elif exception != None:
             print "GoBoard: captureSpot: error: invalid exception"
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
+        for i in range(self.__size):
+            for j in range(self.__size):
                 if mat[i][j] == 1:
                     ret.append((i, j))
         return ret
@@ -130,12 +135,12 @@ class GoBoard(object):
             self.__boardList[spot[0]][spot[1]] = GoBoard.space
 
     def isValidMove(self, x, y, color):
-        if not isinstance(x, int) or not 0 <= x < GoBoard.size or not isinstance(y, int) or not 0 <= y < GoBoard.size or not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black or self.__boardList[x][y] != GoBoard.space:
+        if not isinstance(x, int) or not 0 <= x < self.__size or not isinstance(y, int) or not 0 <= y < self.__size or not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black or self.__boardList[x][y] != GoBoard.space:
             return False
         for k in GoBoard.dxdy:
             i = x + k[0]
             j = y + k[1]
-            if 0 <= i < GoBoard.size and 0 <= j < GoBoard.size and self.__boardList[i][j] == GoBoard.space:
+            if 0 <= i < self.__size and 0 <= j < self.__size and self.__boardList[i][j] == GoBoard.space:
                 return True
         tempBoard = GoBoard(self.__boardList)
         tempBoard.setSpot(x, y, color)
@@ -147,10 +152,10 @@ class GoBoard(object):
         return True
 
     def move(self, x, y, color):
-        if not isinstance(x, int) or not 0 <= x < GoBoard.size:
+        if not isinstance(x, int) or not 0 <= x < self.__size:
             print "GoBoard: move: error: invalid x coordinate"
             return False
-        if not isinstance(y, int) or not 0 <= y < GoBoard.size:
+        if not isinstance(y, int) or not 0 <= y < self.__size:
             print "GoBoard: move: error: invalid y coordinate"
             return False
         if not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black:
@@ -162,7 +167,7 @@ class GoBoard(object):
         for k in GoBoard.dxdy:
             i = x + k[0]
             j = y + k[1]
-            if 0 <= i < GoBoard.size and 0 <= j < GoBoard.size and self.__boardList[i][j] == GoBoard.space:
+            if 0 <= i < self.__size and 0 <= j < self.__size and self.__boardList[i][j] == GoBoard.space:
                 self.__boardList[x][y] = color
                 self.capture()
                 self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
@@ -182,42 +187,40 @@ class GoBoard(object):
         self.__hashHistory.append(self.hash())
         return True
 
-    @staticmethod
-    def isValidBoardList(boardList):
-        if not isinstance(boardList, list) or len(boardList) != GoBoard.size:
+    def isValidBoardList(self, boardList):
+        if not isinstance(boardList, list) or len(boardList) != self.__size:
             return False
         for row in boardList:
-            if not isinstance(row, list) or len(row) != GoBoard.size:
+            if not isinstance(row, list) or len(row) != self.__size:
                 return False
             for spot in row:
                 if not isinstance(spot, int) or not GoBoard.white <= spot <= GoBoard.black:
                     return False
         return True
 
-    @staticmethod
-    def getEmptyBoardList():
-        return [[GoBoard.space] * GoBoard.size for i in range(GoBoard.size)]
+    def getEmptyBoardList(self):
+        return [[GoBoard.space] * self.__size for i in range(self.__size)]
 
     def featureColor(self, color):
         if not isinstance(color, int) or not GoBoard.white <= color <= GoBoard.black:
             print "GoBoard: featureColor: error: invalid color"
-            return GoBoard.getEmptyBoardList()
-        ret = GoBoard.getEmptyBoardList()
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
+            return self.getEmptyBoardList()
+        ret = self.getEmptyBoardList()
+        for i in range(self.__size):
+            for j in range(self.__size):
                 if self.__boardList[i][j] == color:
                     ret[i][j] = 1
         return ret
 
     def featureCurrent(self):
         if self.__fourHistory[3] == None:
-            return GoBoard.getEmptyBoardList()
+            return self.getEmptyBoardList()
         else:
             return self.featureColor(- self.__fourHistory[3][2])
 
     def featureOpponent(self):
         if self.__fourHistory[3] == None:
-            return GoBoard.getEmptyBoardList()
+            return self.getEmptyBoardList()
         else:
             return self.featureColor(self.__fourHistory[3][2])
 
@@ -225,19 +228,19 @@ class GoBoard(object):
         return self.featureColor(GoBoard.space)
 
     def featureAllZeros(self):
-        return GoBoard.getEmptyBoardList()
+        return self.getEmptyBoardList()
 
     def featureAllOnes(self):
-        return [[1] * GoBoard.size for i in range(GoBoard.size)]
+        return [[1] * self.__size for i in range(self.__size)]
 
     def featureFourLiberty(self):
-        ret = [GoBoard.getEmptyBoardList() for i in range(8)]
+        ret = [self.getEmptyBoardList() for i in range(8)]
         color = GoBoard.black
         if self.__fourHistory[3] != None:
             color = - self.__fourHistory[3][2]
         liberty = self.countLiberty()
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
+        for i in range(self.__size):
+            for j in range(self.__size):
                 if self.__boardList[i][j] == color:
                     if liberty[i][j] == 1:
                         ret[0][i][j] = 1
@@ -261,31 +264,31 @@ class GoBoard(object):
     def featureFourHistory(self):
         ret = []
         for i in range(4):
-            mat = GoBoard.getEmptyBoardList()
+            mat = self.getEmptyBoardList()
             if self.__fourHistory[i] != None:
                 mat[self.__fourHistory[i][0]][self.__fourHistory[i][1]] = 1
             ret.append(mat)
         return ret
 
     def featureIllegal(self):
-        ret = GoBoard.getEmptyBoardList()
+        ret = self.getEmptyBoardList()
         color = GoBoard.black
         if self.__fourHistory[3] != None:
             color = - self.__fourHistory[3][2]
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
+        for i in range(self.__size):
+            for j in range(self.__size):
                 if not self.isValidMove(i, j, color):
                     ret[i][j] = 1
         return ret
 
     def featureFourCapture(self):
-        ret = [GoBoard.getEmptyBoardList() for i in range(8)]
+        ret = [self.getEmptyBoardList() for i in range(8)]
         color = GoBoard.black
         if self.__fourHistory[3] != None:
             color = - self.__fourHistory[3][2]
-        vis = GoBoard.getEmptyBoardList()
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
+        vis = self.getEmptyBoardList()
+        for i in range(self.__size):
+            for j in range(self.__size):
                 if vis[i][j] == 0 and self.__boardList[i][j] != GoBoard.space:
                     bfs = self.bfsFloodFill(i, j)
                     for spot in bfs[0]:
@@ -340,8 +343,7 @@ def rPrint(arg):
         print arg,
 
 def test():
-    GoBoard.size = int(raw_input('Board size: '))
-    board = GoBoard()
+    board = GoBoard(int(raw_input('Board size: ')))
     color = GoBoard.black
     while True:
         board.printBoard()
