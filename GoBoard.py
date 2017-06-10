@@ -26,7 +26,7 @@ class GoBoard(object):
             print "GoBoard: save: error: invalid filename"
             return False
         with open(filename, "w") as f:
-            dump(self.__dict__, f, -1)
+            dump(self.__dict__, f, 2)
         return True
 
     def load(self, filename):
