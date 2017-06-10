@@ -14,6 +14,7 @@ class GoBoard(object):
 
     def __init__(self, boardList = None):
         self.__fourHistory = [None] * 4
+        self.__hashHistory = []
         if boardList == None or not self.setBoardList(boardList):
             self.setBoardList(GoBoard.getEmptyBoardList())
 
@@ -141,6 +142,8 @@ class GoBoard(object):
         tempBoard.capture((x, y))
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
             return False
+        if tempBoard.hash() in self.__hashHistory:
+            return False
         return True
 
     def move(self, x, y, color):
@@ -163,6 +166,7 @@ class GoBoard(object):
                 self.setSpot(x, y, color)
                 self.capture()
                 self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
+                self.__hashHistory.append(self.hash())
                 return True
         tempBoard = GoBoard(self.__boardList)
         tempBoard.setSpot(x, y, color)
@@ -170,8 +174,12 @@ class GoBoard(object):
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
             print "GoBoard: move: error: invalid move"
             return False
+        if tempBoard.hash() in self.__hashHistory:
+            print "GoBoard: move: error: reappeared state"
+            return False
         self.setBoardList(tempBoard.getBoardList())
         self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
+        self.__hashHistory.append(self.hash())
         return True
 
     @staticmethod
