@@ -163,7 +163,7 @@ class GoBoard(object):
             i = x + k[0]
             j = y + k[1]
             if 0 <= i < GoBoard.size and 0 <= j < GoBoard.size and self.__boardList[i][j] == GoBoard.space:
-                self.setSpot(x, y, color)
+                self.__boardList[x][y] = color
                 self.capture()
                 self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
                 self.__hashHistory.append(self.hash())
@@ -288,12 +288,17 @@ class GoBoard(object):
             for j in range(GoBoard.size):
                 if vis[i][j] == 0 and self.__boardList[i][j] != GoBoard.space:
                     bfs = self.bfsFloodFill(i, j)
+                    for spot in bfs[0]:
+                        vis[spot[0]][spot[1]] = 1
                     if len(bfs[1]) == 1:
                         x = bfs[1][0][0]
                         y = bfs[1][0][1]
-                        self.setSpot(x, y, - self.__boardList[i][j])
+                        self.__boardList[x][y] = - self.__boardList[i][j]
                         count = len(self.captureSpot((x, y)))
+                        self.__boardList[x][y] = GoBoard.space
                         if self.__boardList[i][j] == - color:
+                            if not self.isValidMove(x, y, color):
+                                continue
                             if count == 1:
                                 ret[0][x][y] = 1
                             elif count == 2:
@@ -311,8 +316,6 @@ class GoBoard(object):
                                 ret[6][x][y] = 1
                             elif count >= 4:
                                 ret[7][x][y] = 1
-                    for spot in bfs[0]:
-                        vis[spot[0]][spot[1]] = 1
         return ret
 
     def allFeatures(self):
