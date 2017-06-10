@@ -23,6 +23,9 @@ class GoBoard(object):
     def getSize(self):
         return self.__size
 
+    def getHistoryCount(self):
+        return len(self.__hashHistory)
+
     def setBoardList(self, boardList):
         if not self.isValidBoardList(boardList):
             print "GoBoard: setBoardList: error: invalid boardList"
@@ -30,8 +33,17 @@ class GoBoard(object):
         self.__boardList = deepcopy(boardList)
         return True
 
-    def getBoardList(self):
-        return deepcopy(self.__boardList)
+    def getBoardList(self, history = None):
+        if history == None:
+            return deepcopy(self.__boardList)
+        else:
+            if not isinstance(history, int) or not 0 <= history < len(self.__hashHistory):
+                print "GoBoard: getBoardList: error: invalid history"
+                return self.getEmptyBoardList()
+            else:
+                tempBoard = GoBoard(self.__size)
+                tempBoard.setBoardListFromHash(self.__hashHistory[history])
+                return tempBoard.getBoardList()
 
     def setSpot(self, x, y, value):
         if not isinstance(x, int) or not 0 <= x < self.__size:
@@ -67,6 +79,24 @@ class GoBoard(object):
             for spot in row:
                 s += str(spot + 1)
         return long(s, 3)
+
+    def setBoardListFromHash(self, h):
+        if not isinstance(h, long):
+            print "GoBoard: setBoardListFromHash: error: invalid hash"
+            return False
+        s = ''
+        while h > 0:
+            s = str(h % 3) + s
+            h /= 3
+        if len(s) < self.__size ** 2:
+            s = '0' * (self.__size ** 2 - len(s)) + s
+        elif len(s) > self.__size ** 2:
+            print "GoBoard: setBoardListFromHash: error: invalid hash"
+            return False
+        for i in range(self.__size):
+            for j in range(self.__size):
+                self.__boardList[i][j] = int(s[i * self.__size + j]) - 1
+        return True
 
     def bfsFloodFill(self, x, y):
         if not isinstance(x, int) or not 0 <= x < self.__size:
