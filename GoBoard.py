@@ -190,44 +190,36 @@ class GoBoard(object):
     def getEmptyBoardList():
         return [[GoBoard.space] * GoBoard.size for i in range(GoBoard.size)]
 
-    def featureBlack(self):
-        ret = self.getBoardList()
+    def featureColor(self, color):
+        if not isinstance(color, int) or not GoBoard.white <= color <= GoBoard.black:
+            print "GoBoard: featureColor: error: invalid color"
+            return GoBoard.getEmptyBoardList()
+        ret = GoBoard.getEmptyBoardList()
         for i in range(GoBoard.size):
             for j in range(GoBoard.size):
-                if ret[i][j] == GoBoard.white:
-                    ret[i][j] = 0
-        return ret
-
-    def featureWhite(self):
-        ret = self.getBoardList()
-        for i in range(GoBoard.size):
-            for j in range(GoBoard.size):
-                if ret[i][j] == GoBoard.black:
-                    ret[i][j] = 0
-                elif ret[i][j] == GoBoard.white:
+                if self.__boardList[i][j] == color:
                     ret[i][j] = 1
         return ret
 
     def featureCurrent(self):
         if self.__fourHistory[3] == None:
             return GoBoard.getEmptyBoardList()
-        elif self.__fourHistory[3][2] == GoBoard.black:
-            return self.featureWhite()
-        elif self.__fourHistory[3][2] == GoBoard.white:
-            return self.featureBlack()
+        else:
+            return self.featureColor(- self.__fourHistory[3][2])
 
     def featureOpponent(self):
         if self.__fourHistory[3] == None:
             return GoBoard.getEmptyBoardList()
-        elif self.__fourHistory[3][2] == GoBoard.black:
-            return self.featureBlack()
-        elif self.__fourHistory[3][2] == GoBoard.white:
-            return self.featureWhite()
+        else:
+            return self.featureColor(self.__fourHistory[3][2])
 
     def featureEmpty(self):
+        return self.featureColor(GoBoard.space)
+
+    def featureAllZeros(self):
         return GoBoard.getEmptyBoardList()
 
-    def featureAllOne(self):
+    def featureAllOnes(self):
         return [[1] * GoBoard.size for i in range(GoBoard.size)]
 
     def featureFourLiberty(self):
@@ -311,7 +303,8 @@ class GoBoard(object):
         ret.append(self.featureCurrent())
         ret.append(self.featureOpponent())
         ret.append(self.featureEmpty())
-        ret.append(self.featureAllOne())
+        ret.append(self.featureAllZeros())
+        ret.append(self.featureAllOnes())
         ret += self.featureFourLiberty()
         ret += self.featureFourHistory()
         ret.append(self.featureIllegal())
