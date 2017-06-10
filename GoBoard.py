@@ -279,29 +279,38 @@ class GoBoard(object):
         return ret
 
     def featureFourCapture(self):
-        ret = [GoBoard.getEmptyBoardList() for i in range(4)]
+        ret = [GoBoard.getEmptyBoardList() for i in range(8)]
         color = GoBoard.black
         if self.__fourHistory[3] != None:
             color = - self.__fourHistory[3][2]
         vis = GoBoard.getEmptyBoardList()
         for i in range(GoBoard.size):
             for j in range(GoBoard.size):
-                if vis[i][j] == 0 and self.__boardList[i][j] == - color:
+                if vis[i][j] == 0 and self.__boardList[i][j] != GoBoard.space:
                     bfs = self.bfsFloodFill(i, j)
                     if len(bfs[1]) == 1:
                         x = bfs[1][0][0]
                         y = bfs[1][0][1]
-                        self.setSpot(x, y, color)
+                        self.setSpot(x, y, - self.__boardList[i][j])
                         count = len(self.captureSpot((x, y)))
-                        if count == 1:
-                            ret[0][x][y] = 1
-                        elif count == 2:
-                            ret[1][x][y] = 1
-                        elif count == 3:
-                            ret[2][x][y] = 1
-                        elif count >= 4:
-                            ret[3][x][y] = 1
-                        self.setSpot(x, y, GoBoard.space)
+                        if self.__boardList[i][j] == - color:
+                            if count == 1:
+                                ret[0][x][y] = 1
+                            elif count == 2:
+                                ret[1][x][y] = 1
+                            elif count == 3:
+                                ret[2][x][y] = 1
+                            elif count >= 4:
+                                ret[3][x][y] = 1
+                        else:
+                            if count == 1:
+                                ret[4][x][y] = 1
+                            elif count == 2:
+                                ret[5][x][y] = 1
+                            elif count == 3:
+                                ret[6][x][y] = 1
+                            elif count >= 4:
+                                ret[7][x][y] = 1
                     for spot in bfs[0]:
                         vis[spot[0]][spot[1]] = 1
         return ret
