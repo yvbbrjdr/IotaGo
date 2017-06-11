@@ -15,6 +15,7 @@ class GoBoard(object):
     dxdy = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
     def __init__(self, size = 19):
+        init()
         if not isinstance(size, int) or size <= 0:
             print "GoBoard: __init__: error: invalid size"
             return
