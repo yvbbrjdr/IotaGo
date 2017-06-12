@@ -153,7 +153,7 @@ class GoBoard(object):
         return (stonespot, libertyspot)
 
     def countLiberty(self):
-        ret = [[-1] * self.__size for i in range(self.__size)]
+        ret = [[-1] * self.__size for _ in range(self.__size)]
         for i in range(self.__size):
             for j in range(self.__size):
                 if ret[i][j] == -1 and self.__boardList[i][j] != GoBoard.space:
@@ -257,7 +257,7 @@ class GoBoard(object):
         return True
 
     def getEmptyBoardList(self):
-        return [[GoBoard.space] * self.__size for i in range(self.__size)]
+        return [[GoBoard.space] * self.__size for _ in range(self.__size)]
 
     def featureColor(self, color):
         if not isinstance(color, int) or not GoBoard.white <= color <= GoBoard.black:
@@ -289,10 +289,10 @@ class GoBoard(object):
         return self.getEmptyBoardList()
 
     def featureAllOnes(self):
-        return [[1] * self.__size for i in range(self.__size)]
+        return [[1] * self.__size for _ in range(self.__size)]
 
     def featureFourLiberty(self):
-        ret = [self.getEmptyBoardList() for i in range(8)]
+        ret = [self.getEmptyBoardList() for _ in range(8)]
         color = GoBoard.black
         if self.__fourHistory[3] != None:
             color = - self.__fourHistory[3][2]
@@ -340,7 +340,7 @@ class GoBoard(object):
         return ret
 
     def featureFourCapture(self):
-        ret = [self.getEmptyBoardList() for i in range(8)]
+        ret = [self.getEmptyBoardList() for _ in range(8)]
         color = GoBoard.black
         if self.__fourHistory[3] != None:
             color = - self.__fourHistory[3][2]
@@ -380,7 +380,7 @@ class GoBoard(object):
         return ret
 
     def allFeatures(self):
-        ret = [[[0] * GoBoard.featureCount for j in range(self.__size)] for i in range(self.__size)]
+        ret = [[[0] * GoBoard.featureCount for _ in range(self.__size)] for _ in range(self.__size)]
         tmp = []
         tmp.append(self.featureCurrent())
         tmp.append(self.featureOpponent())
