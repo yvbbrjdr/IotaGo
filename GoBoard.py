@@ -10,6 +10,7 @@ class GoBoard(object):
     black = 1
     space = 0
     white = -1
+    featureCount = 26
     printDic = {space : '.', black : 'B', white : 'W'}
     colorDic = {space : Fore.WHITE + Style.BRIGHT, black : Fore.RED + Style.BRIGHT, white : Fore.WHITE + Style.BRIGHT, 'last' : Fore.CYAN + Style.BRIGHT, 'reset' : Style.RESET_ALL}
     dxdy = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -379,16 +380,21 @@ class GoBoard(object):
         return ret
 
     def allFeatures(self):
-        ret = []
-        ret.append(self.featureCurrent())
-        ret.append(self.featureOpponent())
-        ret.append(self.featureEmpty())
-        ret.append(self.featureAllZeros())
-        ret.append(self.featureAllOnes())
-        ret += self.featureFourLiberty()
-        ret += self.featureFourHistory()
-        ret.append(self.featureIllegal())
-        ret += self.featureFourCapture()
+        ret = [[[0] * GoBoard.featureCount for j in range(self.__size)] for i in range(self.__size)]
+        tmp = []
+        tmp.append(self.featureCurrent())
+        tmp.append(self.featureOpponent())
+        tmp.append(self.featureEmpty())
+        tmp.append(self.featureAllZeros())
+        tmp.append(self.featureAllOnes())
+        tmp += self.featureFourLiberty()
+        tmp += self.featureFourHistory()
+        tmp.append(self.featureIllegal())
+        tmp += self.featureFourCapture()
+        for i in range(self.__size):
+            for j in range(self.__size):
+                for k in range(GoBoard.featureCount):
+                    ret[i][j][k] = tmp[k][i][j]
         return ret
 
 def rPrint(arg):
