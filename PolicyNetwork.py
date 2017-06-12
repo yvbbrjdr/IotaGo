@@ -17,7 +17,7 @@ class PolicyNetwork(object):
             return
         self.__size = size
         self.__x = tf.placeholder(tf.float32, shape = [None, size, size, gb.featureCount])
-        self.__y_ = tf.placeholder(tf.float32, shape=[None, size ** 2])
+        self.__y_ = tf.placeholder(tf.float32, shape = [None, size ** 2])
         self.__y = PolicyNetwork.conv2d(self.__x, PolicyNetwork.weight_variable([5, 5, gb.featureCount, PolicyNetwork.filterCount]))
         self.__y += PolicyNetwork.bias_variable([PolicyNetwork.filterCount])
         self.__y = tf.nn.relu(self.__y)
