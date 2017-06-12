@@ -31,7 +31,7 @@ class PolicyNetwork(object):
         self.__logy = tf.reshape(self.__y, [-1, size ** 2])
         self.__y = tf.nn.softmax(self.__logy)
         self.__cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels = self.__y_, logits = self.__logy))
-        self.__train_step = tf.train.GradientDescentOptimizer(0.01).minimize(self.__cross_entropy)
+        self.__train_step = tf.train.MomentumOptimizer(0.01, 0.01).minimize(self.__cross_entropy)
         self.__sess = tf.Session()
         self.__sess.run(tf.global_variables_initializer())
 
@@ -129,11 +129,11 @@ def test():
     filename = raw_input('Filename: ')
     if os.path.isfile(filename + '.meta'):
         network.load(filename)
-    print "Loss:", network.loss([board1, board2], [(3, 3), (15, 15)])
-    for _ in range(1000):
-        network.train([board1, board2], [(3, 3), (15, 15)])
+    print "Initial Loss:", network.loss([board1, board2], [(3, 3), (15, 15)])
+    for i in range(100):
+        network.train([board1, board2], [(3, 3), (15, 15)], 10)
         network.save(filename)
-        print "Loss:", network.loss([board1, board2], [(3, 3), (15, 15)])
+        print "Step:", i * 10 + 10, "Loss:", network.loss([board1, board2], [(3, 3), (15, 15)])
     rPrint([network.inference(board1), network.inference(board2)])
 
 if __name__ == '__main__':
