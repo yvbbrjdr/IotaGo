@@ -8,7 +8,7 @@ from GoBoard import rPrint
 
 class PolicyNetwork(object):
 
-    filterCount = 256
+    filterCount = 64
     filterSize = 3
 
     def __init__(self, size = 19):
@@ -20,7 +20,7 @@ class PolicyNetwork(object):
         self.__y = PolicyNetwork.conv2d(self.__x, PolicyNetwork.weight_variable([5, 5, gb.featureCount, PolicyNetwork.filterCount]))
         self.__y += PolicyNetwork.bias_variable([PolicyNetwork.filterCount])
         self.__y = tf.nn.relu(self.__y)
-        for _ in range(11):
+        for _ in range(1):
             self.__y = PolicyNetwork.conv2d(self.__y, PolicyNetwork.weight_variable([PolicyNetwork.filterSize, PolicyNetwork.filterSize, PolicyNetwork.filterCount, PolicyNetwork.filterCount]))
             self.__y += PolicyNetwork.bias_variable([PolicyNetwork.filterCount])
             self.__y = tf.nn.relu(self.__y)
@@ -30,7 +30,7 @@ class PolicyNetwork(object):
         self.__logy = tf.reshape(self.__y, [-1, size ** 2])
         self.__y = tf.nn.softmax(self.__logy)
         self.__cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels = self.__y_, logits = self.__logy))
-        self.__train_step = tf.train.MomentumOptimizer(0.01, 0.01).minimize(self.__cross_entropy)
+        self.__train_step = tf.train.GradientDescentOptimizer(0.01).minimize(self.__cross_entropy)
         self.__sess = tf.Session()
         self.__sess.run(tf.global_variables_initializer())
 
