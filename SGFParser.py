@@ -24,7 +24,6 @@ class SGFParser(object):
             self.__moves = [s for s in f.read().split(';') if s[0] == 'B' or s[0] == 'W']
         self.__opened = True
         self.__index = 0
-        return True
 
     def getNextMove(self):
         while True:

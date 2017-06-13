@@ -41,13 +41,11 @@ class PolicyNetwork(object):
         if not isinstance(filename, str):
             raise Exception("PolicyNetwork: save: error: invalid filename")
         tf.train.Saver().save(self.__sess, filename)
-        return True
 
     def load(self, filename):
         if not isinstance(filename, str):
             raise Exception("PolicyNetwork: load: error: invalid filename")
         tf.train.Saver().restore(self.__sess, filename)
-        return True
 
     def inference(self, board):
         if not isinstance(board, gb) or board.getSize() != self.__size:
@@ -75,7 +73,6 @@ class PolicyNetwork(object):
             y.append(tmp)
         for _ in range(times):
             self.__sess.run(self.__train_step, {self.__x : x, self.__y_ : y})
-        return True
 
     def loss(self, boards, moves):
         if not isinstance(boards, list):

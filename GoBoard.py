@@ -29,14 +29,12 @@ class GoBoard(object):
             raise Exception("GoBoard: save: error: invalid filename")
         with open(filename, "wb") as f:
             dump(self.__dict__, f, 2)
-        return True
 
     def load(self, filename):
         if not isinstance(filename, str):
             raise Exception("GoBoard: load: error: invalid filename")
         with open(filename, "rb") as f:
             self.__dict__.update(load(f))
-        return True
 
     def getSize(self):
         return self.__size
@@ -48,7 +46,6 @@ class GoBoard(object):
         if not self.isValidBoardList(boardList):
             raise Exception("GoBoard: setBoardList: error: invalid boardList")
         self.__boardList = deepcopy(boardList)
-        return True
 
     def getBoardList(self, history = None):
         if history == None:
@@ -69,7 +66,6 @@ class GoBoard(object):
         if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
             raise Exception("GoBoard: setSpot: error: invalid value")
         self.__boardList[x][y] = value
-        return True
 
     def getSpot(self, x, y):
         if not isinstance(x, int) or not 0 <= x < self.__size:
@@ -111,7 +107,6 @@ class GoBoard(object):
         for i in range(self.__size):
             for j in range(self.__size):
                 self.__boardList[i][j] = int(s[i * self.__size + j]) - 1
-        return True
 
     def bfsFloodFill(self, x, y):
         if not isinstance(x, int) or not 0 <= x < self.__size:
@@ -212,7 +207,7 @@ class GoBoard(object):
                 self.capture()
                 self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
                 self.__hashHistory.append(self.hash())
-                return True
+                return
         tempBoard = GoBoard(self.__size)
         tempBoard.setBoardList(self.__boardList)
         tempBoard.setSpot(x, y, color)
@@ -224,7 +219,6 @@ class GoBoard(object):
         self.__boardList = tempBoard.getBoardList()
         self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
         self.__hashHistory.append(self.hash())
-        return True
 
     def isValidBoardList(self, boardList):
         if not isinstance(boardList, list) or len(boardList) != self.__size:
