@@ -31,6 +31,8 @@ class PolicyNetwork(object):
         self.__y = tf.nn.softmax(self.__logy)
         self.__cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels = self.__y_, logits = self.__logy))
         self.__train_step = tf.train.GradientDescentOptimizer(0.01).minimize(self.__cross_entropy)
+        correct_prediction = tf.equal(tf.argmax(self.__y, 1), tf.argmax(self.__y_, 1))
+        self.__accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         self.__sess = tf.Session()
         self.__sess.run(tf.global_variables_initializer())
 
@@ -74,7 +76,7 @@ class PolicyNetwork(object):
         for _ in range(times):
             self.__sess.run(self.__train_step, {self.__x : x, self.__y_ : y})
 
-    def loss(self, boards, moves):
+    def lossAndAccuracy(self, boards, moves):
         if not isinstance(boards, list):
             raise Exception("PolicyNetwork: loss: error: invalid boards")
         if not isinstance(moves, list):
@@ -91,7 +93,7 @@ class PolicyNetwork(object):
             tmp = [0] * (self.__size ** 2)
             tmp[move[0] * self.__size + move[1]] = 1
             y.append(tmp)
-        return self.__sess.run(self.__cross_entropy, {self.__x : x, self.__y_ : y})
+        return (self.__sess.run([self.__cross_entropy, self.__accuracy], {self.__x : x, self.__y_ : y}))
 
     @staticmethod
     def weight_variable(shape):
@@ -110,10 +112,10 @@ def test():
     board2 = gb()
     board2.move(3, 3, gb.black)
     network = PolicyNetwork(board1.getSize())
-    print("Initial Loss:", network.loss([board1, board2], [(3, 3), (15, 15)]))
+    print("Initial Loss and Accuracy:", network.lossAndAccuracy([board1, board2], [(3, 3), (15, 15)]))
     for i in range(100):
         network.train([board1, board2], [(3, 3), (15, 15)], 10)
-        print("Step:", i * 10 + 10, "Loss:", network.loss([board1, board2], [(3, 3), (15, 15)]))
+        print("Step:", i * 10 + 10, "Loss and Accuracy:", network.lossAndAccuracy([board1, board2], [(3, 3), (15, 15)]))
     rPrint([network.inference(board1), network.inference(board2)])
 
 if __name__ == '__main__':
