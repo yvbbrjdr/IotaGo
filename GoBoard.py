@@ -399,17 +399,17 @@ def test():
         if x == '' and y == '':
             color = - color
             continue
-        if board.move(int(x), int(y), color):
-            board.printBoard()
-            while True:
-                feature = input('Feature: ')
-                if feature == '':
-                    break
-                if hasattr(board, 'feature' + feature):
-                    rPrint(getattr(board, 'feature' + feature)())
-                else:
-                    print("Feature not found!")
-            color = - color
+        board.move(int(x), int(y), color)
+        board.printBoard()
+        while True:
+            feature = input('Feature: ')
+            if feature == '':
+                break
+            if hasattr(board, 'feature' + feature):
+                rPrint(getattr(board, 'feature' + feature)())
+            else:
+                print("Feature not found!")
+        color = - color
 
 if __name__ == '__main__':
     test()
