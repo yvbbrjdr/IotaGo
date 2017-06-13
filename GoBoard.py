@@ -36,6 +36,12 @@ class GoBoard(object):
         with open(filename, "rb") as f:
             self.__dict__.update(load(f))
 
+    def getNextColor(self):
+        return self.__nextColor
+
+    def skip(self):
+        self.__nextColor = - self.__nextColor
+
     def getSize(self):
         return self.__size
 
@@ -342,8 +348,8 @@ def rPrint(arg):
 
 def test():
     board = GoBoard(int(input('Board size: ')))
-    color = GoBoard.black
     while True:
+        color = board.getNextColor()
         board.printBoard()
         if color == GoBoard.black:
             print("Black's turn")
@@ -352,9 +358,9 @@ def test():
         x = input('x: ')
         y = input('y: ')
         if x == '' and y == '':
-            color = - color
-            continue
-        board.move(int(x), int(y), color)
+            board.skip()
+        else:
+            board.move(int(x), int(y), color)
         board.printBoard()
         while True:
             feature = input('Feature: ')
@@ -364,7 +370,6 @@ def test():
                 rPrint(getattr(board, 'feature' + feature)())
             else:
                 print("Feature not found!")
-        color = - color
 
 if __name__ == '__main__':
     test()
