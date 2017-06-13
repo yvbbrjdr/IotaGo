@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from copy import deepcopy
-from Queue import Queue
-from cPickle import dump, load
+from queue import Queue
+from pickle import dump, load
 from colorama import init, Fore, Style
 
 class GoBoard(object):
@@ -18,7 +18,7 @@ class GoBoard(object):
     def __init__(self, size = 19):
         init()
         if not isinstance(size, int) or size <= 0:
-            print "GoBoard: __init__: error: invalid size"
+            print("GoBoard: __init__: error: invalid size")
             return
         self.__size = size
         self.__fourHistory = [None] * 4
@@ -27,7 +27,7 @@ class GoBoard(object):
 
     def save(self, filename):
         if not isinstance(filename, str):
-            print "GoBoard: save: error: invalid filename"
+            print("GoBoard: save: error: invalid filename")
             return False
         with open(filename, "wb") as f:
             dump(self.__dict__, f, 2)
@@ -35,7 +35,7 @@ class GoBoard(object):
 
     def load(self, filename):
         if not isinstance(filename, str):
-            print "GoBoard: load: error: invalid filename"
+            print("GoBoard: load: error: invalid filename")
             return False
         with open(filename, "rb") as f:
             self.__dict__.update(load(f))
@@ -49,7 +49,7 @@ class GoBoard(object):
 
     def setBoardList(self, boardList):
         if not self.isValidBoardList(boardList):
-            print "GoBoard: setBoardList: error: invalid boardList"
+            print("GoBoard: setBoardList: error: invalid boardList")
             return False
         self.__boardList = deepcopy(boardList)
         return True
@@ -59,7 +59,7 @@ class GoBoard(object):
             return deepcopy(self.__boardList)
         else:
             if not isinstance(history, int) or not 0 <= history < len(self.__hashHistory):
-                print "GoBoard: getBoardList: error: invalid history"
+                print("GoBoard: getBoardList: error: invalid history")
                 return self.getEmptyBoardList()
             else:
                 tempBoard = GoBoard(self.__size)
@@ -68,48 +68,48 @@ class GoBoard(object):
 
     def setSpot(self, x, y, value):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            print "GoBoard: setSpot: error: invalid x coordinate"
+            print("GoBoard: setSpot: error: invalid x coordinate")
             return False
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            print "GoBoard: setSpot: error: invalid y coordinate"
+            print("GoBoard: setSpot: error: invalid y coordinate")
             return False
         if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
-            print "GoBoard: setSpot: error: invalid value"
+            print("GoBoard: setSpot: error: invalid value")
             return False
         self.__boardList[x][y] = value
         return True
 
     def getSpot(self, x, y):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            print "GoBoard: getSpot: error: invalid x coordinate"
+            print("GoBoard: getSpot: error: invalid x coordinate")
             return None
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            print "GoBoard: getSpot: error: invalid y coordinate"
+            print("GoBoard: getSpot: error: invalid y coordinate")
             return None
         return self.__boardList[x][y]
 
     def printBoard(self):
-        print GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+'
+        print(GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+')
         for i in range(self.__size):
-            print GoBoard.colorDic[GoBoard.space] + '|',
+            print(GoBoard.colorDic[GoBoard.space] + '|', end = ' ')
             for j in range(self.__size):
                 if self.__fourHistory[3] != None and self.__fourHistory[3][0] == i and self.__fourHistory[3][1] == j:
-                    print GoBoard.colorDic['last'] + GoBoard.printDic[self.__boardList[i][j]],
+                    print(GoBoard.colorDic['last'] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
                 else:
-                    print GoBoard.colorDic[self.__boardList[i][j]] + GoBoard.printDic[self.__boardList[i][j]],
-            print GoBoard.colorDic[GoBoard.space] + '|'
-        print GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+' + Style.RESET_ALL
+                    print(GoBoard.colorDic[self.__boardList[i][j]] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
+            print(GoBoard.colorDic[GoBoard.space] + '|')
+        print(GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+' + Style.RESET_ALL)
 
     def hash(self):
         s = ''
         for row in self.__boardList:
             for spot in row:
                 s += str(spot + 1)
-        return long(s, 3)
+        return int(s, 3)
 
     def setBoardListFromHash(self, h):
-        if not isinstance(h, long):
-            print "GoBoard: setBoardListFromHash: error: invalid hash"
+        if not isinstance(h, int):
+            print("GoBoard: setBoardListFromHash: error: invalid hash")
             return False
         s = ''
         while h > 0:
@@ -118,7 +118,7 @@ class GoBoard(object):
         if len(s) < self.__size ** 2:
             s = '0' * (self.__size ** 2 - len(s)) + s
         elif len(s) > self.__size ** 2:
-            print "GoBoard: setBoardListFromHash: error: invalid hash"
+            print("GoBoard: setBoardListFromHash: error: invalid hash")
             return False
         for i in range(self.__size):
             for j in range(self.__size):
@@ -127,10 +127,10 @@ class GoBoard(object):
 
     def bfsFloodFill(self, x, y):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            print "GoBoard: bfsFloodFill: error: invalid x coordinate"
+            print("GoBoard: bfsFloodFill: error: invalid x coordinate")
             return ([], [])
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            print "GoBoard: bfsFloodFill: error: invalid y coordinate"
+            print("GoBoard: bfsFloodFill: error: invalid y coordinate")
             return ([], [])
         color = self.__boardList[x][y]
         if color == GoBoard.space:
@@ -179,7 +179,7 @@ class GoBoard(object):
             for spot in god[0]:
                 mat[spot[0]][spot[1]] = 0
         elif exception != None:
-            print "GoBoard: captureSpot: error: invalid exception"
+            print("GoBoard: captureSpot: error: invalid exception")
         for i in range(self.__size):
             for j in range(self.__size):
                 if mat[i][j] == 1:
@@ -211,16 +211,16 @@ class GoBoard(object):
 
     def move(self, x, y, color):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            print "GoBoard: move: error: invalid x coordinate"
+            print("GoBoard: move: error: invalid x coordinate")
             return False
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            print "GoBoard: move: error: invalid y coordinate"
+            print("GoBoard: move: error: invalid y coordinate")
             return False
         if not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black:
-            print "GoBoard: move: error: invalid color"
+            print("GoBoard: move: error: invalid color")
             return False
         if self.__boardList[x][y] != GoBoard.space:
-            print "GoBoard: move: error: occupied spot"
+            print("GoBoard: move: error: occupied spot")
             return False
         for k in GoBoard.dxdy:
             i = x + k[0]
@@ -236,10 +236,10 @@ class GoBoard(object):
         tempBoard.setSpot(x, y, color)
         tempBoard.capture((x, y))
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
-            print "GoBoard: move: error: invalid move"
+            print("GoBoard: move: error: invalid move")
             return False
         if tempBoard.hash() in self.__hashHistory:
-            print "GoBoard: move: error: reappeared state"
+            print("GoBoard: move: error: reappeared state")
             return False
         self.__boardList = tempBoard.getBoardList()
         self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
@@ -262,7 +262,7 @@ class GoBoard(object):
 
     def featureColor(self, color):
         if not isinstance(color, int) or not GoBoard.white <= color <= GoBoard.black:
-            print "GoBoard: featureColor: error: invalid color"
+            print("GoBoard: featureColor: error: invalid color")
             return self.getEmptyBoardList()
         ret = self.getEmptyBoardList()
         for i in range(self.__size):
@@ -402,34 +402,34 @@ def rPrint(arg):
     if isinstance(arg, list):
         for item in arg:
             rPrint(item)
-        print
+        print()
     else:
-        print arg,
+        print(arg, end = ' ')
 
 def test():
-    board = GoBoard(int(raw_input('Board size: ')))
+    board = GoBoard(int(input('Board size: ')))
     color = GoBoard.black
     while True:
         board.printBoard()
         if color == GoBoard.black:
-            print "Black's turn"
+            print("Black's turn")
         else:
-            print "White's turn"
-        x = raw_input('x: ')
-        y = raw_input('y: ')
+            print("White's turn")
+        x = input('x: ')
+        y = input('y: ')
         if x == '' and y == '':
             color = - color
             continue
         if board.move(int(x), int(y), color):
             board.printBoard()
             while True:
-                feature = raw_input('Feature: ')
+                feature = input('Feature: ')
                 if feature == '':
                     break
                 if hasattr(board, 'feature' + feature):
                     rPrint(getattr(board, 'feature' + feature)())
                 else:
-                    print "Feature not found!"
+                    print("Feature not found!")
             color = - color
 
 if __name__ == '__main__':

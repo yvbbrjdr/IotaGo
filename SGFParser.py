@@ -18,7 +18,7 @@ class SGFParser(object):
 
     def open(self, filename):
         if not isinstance(filename, str):
-            print "SGFParser: open: error: invalid filename"
+            print("SGFParser: open: error: invalid filename")
             self.__opened = False
             return False
         with open(filename, "r") as f:
@@ -46,7 +46,7 @@ class SGFParser(object):
         return self.__index < len(self.__moves)
 
 def test():
-    sgf = SGFParser(raw_input("Filename: "))
+    sgf = SGFParser(input("Filename: "))
     board = gb()
     while sgf.hasNextMove():
         move = sgf.getNextMove()
