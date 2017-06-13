@@ -10,9 +10,9 @@ class GoBoard(object):
     black = 1
     space = 0
     white = -1
-    featureCount = 26
+    featureCount = 22
     printDic = {space : '.', black : 'B', white : 'W'}
-    colorDic = {space : Fore.WHITE + Style.BRIGHT, black : Fore.RED + Style.BRIGHT, white : Fore.WHITE + Style.BRIGHT, 'last' : Fore.CYAN + Style.BRIGHT, 'reset' : Style.RESET_ALL}
+    colorDic = {space : Fore.WHITE + Style.BRIGHT, black : Fore.RED + Style.BRIGHT, white : Fore.WHITE + Style.BRIGHT, 'reset' : Style.RESET_ALL}
     dxdy = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
     def __init__(self, size = 19):
@@ -20,8 +20,8 @@ class GoBoard(object):
         if not isinstance(size, int) or size <= 0:
             raise Exception("GoBoard: __init__: error: invalid size")
         self.__size = size
-        self.__fourHistory = [None] * 4
-        self.__hashHistory = []
+        self.__twoHistory = [None] * 2
+        self.__nextColor = GoBoard.black
         self.__boardList = self.getEmptyBoardList()
 
     def save(self, filename):
@@ -39,24 +39,13 @@ class GoBoard(object):
     def getSize(self):
         return self.__size
 
-    def getHistoryCount(self):
-        return len(self.__hashHistory)
-
     def setBoardList(self, boardList):
         if not self.isValidBoardList(boardList):
             raise Exception("GoBoard: setBoardList: error: invalid boardList")
         self.__boardList = deepcopy(boardList)
 
-    def getBoardList(self, history = None):
-        if history == None:
-            return deepcopy(self.__boardList)
-        else:
-            if not isinstance(history, int) or not 0 <= history < len(self.__hashHistory):
-                raise Exception("GoBoard: getBoardList: error: invalid history")
-            else:
-                tempBoard = GoBoard(self.__size)
-                tempBoard.setBoardListFromHash(self.__hashHistory[history])
-                return tempBoard.getBoardList()
+    def getBoardList(self):
+        return deepcopy(self.__boardList)
 
     def setSpot(self, x, y, value):
         if not isinstance(x, int) or not 0 <= x < self.__size:
@@ -79,10 +68,7 @@ class GoBoard(object):
         for i in range(self.__size):
             print(GoBoard.colorDic[GoBoard.space] + '|', end = ' ')
             for j in range(self.__size):
-                if self.__fourHistory[3] != None and self.__fourHistory[3][0] == i and self.__fourHistory[3][1] == j:
-                    print(GoBoard.colorDic['last'] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
-                else:
-                    print(GoBoard.colorDic[self.__boardList[i][j]] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
+                print(GoBoard.colorDic[self.__boardList[i][j]] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
             print(GoBoard.colorDic[GoBoard.space] + '|')
         print(GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+' + Style.RESET_ALL)
 
@@ -186,7 +172,7 @@ class GoBoard(object):
         tempBoard.capture((x, y))
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
             return False
-        if tempBoard.hash() in self.__hashHistory:
+        if self.__twoHistory[0] == tempBoard.hash():
             return False
         return True
 
@@ -205,8 +191,8 @@ class GoBoard(object):
             if 0 <= i < self.__size and 0 <= j < self.__size and self.__boardList[i][j] == GoBoard.space:
                 self.__boardList[x][y] = color
                 self.capture()
-                self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
-                self.__hashHistory.append(self.hash())
+                self.__twoHistory[0], self.__twoHistory[1] = self.__twoHistory[1], self.hash()
+                self.__nextColor = - color
                 return
         tempBoard = GoBoard(self.__size)
         tempBoard.setBoardList(self.__boardList)
@@ -214,11 +200,11 @@ class GoBoard(object):
         tempBoard.capture((x, y))
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
             raise Exception("GoBoard: move: error: invalid move")
-        if tempBoard.hash() in self.__hashHistory:
+        if self.__twoHistory[0] == tempBoard.hash():
             raise Exception("GoBoard: move: error: reappeared state")
         self.__boardList = tempBoard.getBoardList()
-        self.__fourHistory[0], self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3] = self.__fourHistory[1], self.__fourHistory[2], self.__fourHistory[3], (x, y, color)
-        self.__hashHistory.append(self.hash())
+        self.__twoHistory[0], self.__twoHistory[1] = self.__twoHistory[1], self.hash()
+        self.__nextColor = - color
 
     def isValidBoardList(self, boardList):
         if not isinstance(boardList, list) or len(boardList) != self.__size:
@@ -245,16 +231,10 @@ class GoBoard(object):
         return ret
 
     def featureCurrent(self):
-        if self.__fourHistory[3] == None:
-            return self.getEmptyBoardList()
-        else:
-            return self.featureColor(- self.__fourHistory[3][2])
+        return self.featureColor(self.__nextColor)
 
     def featureOpponent(self):
-        if self.__fourHistory[3] == None:
-            return self.getEmptyBoardList()
-        else:
-            return self.featureColor(self.__fourHistory[3][2])
+        return self.featureColor(- self.__nextColor)
 
     def featureEmpty(self):
         return self.featureColor(GoBoard.space)
@@ -267,13 +247,10 @@ class GoBoard(object):
 
     def featureFourLiberty(self):
         ret = [self.getEmptyBoardList() for _ in range(8)]
-        color = GoBoard.black
-        if self.__fourHistory[3] != None:
-            color = - self.__fourHistory[3][2]
         liberty = self.countLiberty()
         for i in range(self.__size):
             for j in range(self.__size):
-                if self.__boardList[i][j] == color:
+                if self.__boardList[i][j] == self.__nextColor:
                     if liberty[i][j] == 1:
                         ret[0][i][j] = 1
                     elif liberty[i][j] == 2:
@@ -282,7 +259,7 @@ class GoBoard(object):
                         ret[2][i][j] = 1
                     elif liberty[i][j] >= 4:
                         ret[3][i][j] = 1
-                elif self.__boardList[i][j] == - color:
+                elif self.__boardList[i][j] == - self.__nextColor:
                     if liberty[i][j] == 1:
                         ret[4][i][j] = 1
                     elif liberty[i][j] == 2:
@@ -293,31 +270,16 @@ class GoBoard(object):
                         ret[7][i][j] = 1
         return ret
 
-    def featureFourHistory(self):
-        ret = []
-        for i in range(4):
-            mat = self.getEmptyBoardList()
-            if self.__fourHistory[i] != None:
-                mat[self.__fourHistory[i][0]][self.__fourHistory[i][1]] = 1
-            ret.append(mat)
-        return ret
-
     def featureIllegal(self):
         ret = self.getEmptyBoardList()
-        color = GoBoard.black
-        if self.__fourHistory[3] != None:
-            color = - self.__fourHistory[3][2]
         for i in range(self.__size):
             for j in range(self.__size):
-                if not self.isValidMove(i, j, color):
+                if not self.isValidMove(i, j, self.__nextColor):
                     ret[i][j] = 1
         return ret
 
     def featureFourCapture(self):
         ret = [self.getEmptyBoardList() for _ in range(8)]
-        color = GoBoard.black
-        if self.__fourHistory[3] != None:
-            color = - self.__fourHistory[3][2]
         vis = self.getEmptyBoardList()
         for i in range(self.__size):
             for j in range(self.__size):
@@ -331,8 +293,8 @@ class GoBoard(object):
                         self.__boardList[x][y] = - self.__boardList[i][j]
                         count = len(self.captureSpot((x, y)))
                         self.__boardList[x][y] = GoBoard.space
-                        if self.__boardList[i][j] == - color:
-                            if not self.isValidMove(x, y, color):
+                        if self.__boardList[i][j] == - self.__nextColor:
+                            if not self.isValidMove(x, y, self.__nextColor):
                                 continue
                             if count == 1:
                                 ret[0][x][y] = 1
@@ -362,7 +324,6 @@ class GoBoard(object):
         tmp.append(self.featureAllZeros())
         tmp.append(self.featureAllOnes())
         tmp += self.featureFourLiberty()
-        tmp += self.featureFourHistory()
         tmp.append(self.featureIllegal())
         tmp += self.featureFourCapture()
         for i in range(self.__size):
