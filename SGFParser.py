@@ -18,9 +18,8 @@ class SGFParser(object):
 
     def open(self, filename):
         if not isinstance(filename, str):
-            print("SGFParser: open: error: invalid filename")
             self.__opened = False
-            return False
+            raise Exception("SGFParser: open: error: invalid filename")
         with open(filename, "r") as f:
             self.__moves = [s for s in f.read().split(';') if s[0] == 'B' or s[0] == 'W']
         self.__opened = True

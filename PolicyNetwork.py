@@ -13,8 +13,7 @@ class PolicyNetwork(object):
 
     def __init__(self, size = 19):
         if not isinstance(size, int) or size <= 0:
-            print("PolicyNetwork: __init__: error: invalid size")
-            return
+            raise Exception("PolicyNetwork: __init__: error: invalid size")
         self.__size = size
         self.__x = tf.placeholder(tf.float32, shape = [None, size, size, gb.featureCount])
         self.__y_ = tf.placeholder(tf.float32, shape = [None, size ** 2])
@@ -40,45 +39,37 @@ class PolicyNetwork(object):
 
     def save(self, filename):
         if not isinstance(filename, str):
-            print("PolicyNetwork: save: error: invalid filename")
-            return False
+            raise Exception("PolicyNetwork: save: error: invalid filename")
         tf.train.Saver().save(self.__sess, filename)
         return True
 
     def load(self, filename):
         if not isinstance(filename, str):
-            print("PolicyNetwork: load: error: invalid filename")
-            return False
+            raise Exception("PolicyNetwork: load: error: invalid filename")
         tf.train.Saver().restore(self.__sess, filename)
         return True
 
     def inference(self, board):
         if not isinstance(board, gb) or board.getSize() != self.__size:
-            print("PolicyNetwork: inference: error: invalid board")
-            return False
+            raise Exception("PolicyNetwork: inference: error: invalid board")
         return self.__sess.run(self.__y, {self.__x : [board.allFeatures()]}).reshape([self.__size, self.__size]).tolist()
 
     def train(self, boards, moves, times = 1):
         if not isinstance(boards, list):
-            print("PolicyNetwork: train: error: invalid boards")
-            return False
+            raise Exception("PolicyNetwork: train: error: invalid boards")
         if not isinstance(moves, list):
-            print("PolicyNetwork: train: error: invalid moves")
-            return False
+            raise Exception("PolicyNetwork: train: error: invalid moves")
         if not isinstance(times, int) or times <= 0:
-            print("PolicyNetwork: train: error: invalid times")
-            return False
+            raise Exception("PolicyNetwork: train: error: invalid times")
         x = []
         y = []
         for board in boards:
             if not isinstance(board, gb):
-                print("PolicyNetwork: train: error: invalid board")
-                return False
+                raise Exception("PolicyNetwork: train: error: invalid board")
             x.append(board.allFeatures())
         for move in moves:
             if not isinstance(move, tuple) or len(move) != 2 or not isinstance(move[0], int) or not isinstance(move[1], int):
-                print("PolicyNetwork: train: error: invalid move")
-                return False
+                raise Exception("PolicyNetwork: train: error: invalid move")
             tmp = [0] * (self.__size ** 2)
             tmp[move[0] * self.__size + move[1]] = 1
             y.append(tmp)
@@ -88,22 +79,18 @@ class PolicyNetwork(object):
 
     def loss(self, boards, moves):
         if not isinstance(boards, list):
-            print("PolicyNetwork: loss: error: invalid boards")
-            return False
+            raise Exception("PolicyNetwork: loss: error: invalid boards")
         if not isinstance(moves, list):
-            print("PolicyNetwork: loss: error: invalid moves")
-            return False
+            raise Exception("PolicyNetwork: loss: error: invalid moves")
         x = []
         y = []
         for board in boards:
             if not isinstance(board, gb):
-                print("PolicyNetwork: loss: error: invalid board")
-                return False
+                raise Exception("PolicyNetwork: loss: error: invalid board")
             x.append(board.allFeatures())
         for move in moves:
             if not isinstance(move, tuple) or len(move) != 2 or not isinstance(move[0], int) or not isinstance(move[1], int):
-                print("PolicyNetwork: loss: error: invalid move")
-                return False
+                raise Exception("PolicyNetwork: loss: error: invalid move")
             tmp = [0] * (self.__size ** 2)
             tmp[move[0] * self.__size + move[1]] = 1
             y.append(tmp)
