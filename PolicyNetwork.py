@@ -95,7 +95,7 @@ class PolicyNetwork(object):
 
     @staticmethod
     def weight_variable(shape):
-        return tf.Variable(tf.truncated_normal(shape, stddev = 0))
+        return tf.Variable(tf.truncated_normal(shape, stddev = 1e-3))
 
     @staticmethod
     def bias_variable(shape):
@@ -110,13 +110,9 @@ def test():
     board2 = gb()
     board2.move(3, 3, gb.black)
     network = PolicyNetwork(board1.getSize())
-    filename = input('Filename: ')
-    if os.path.isfile(filename + '.meta'):
-        network.load(filename)
     print("Initial Loss:", network.loss([board1, board2], [(3, 3), (15, 15)]))
     for i in range(100):
         network.train([board1, board2], [(3, 3), (15, 15)], 10)
-        network.save(filename)
         print("Step:", i * 10 + 10, "Loss:", network.loss([board1, board2], [(3, 3), (15, 15)]))
     rPrint([network.inference(board1), network.inference(board2)])
 
