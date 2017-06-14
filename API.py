@@ -9,7 +9,7 @@ def trainSGF():
     board = gb()
     sgf = sp()
     network = pn()
-    sgf.open(input('Filename: '))
+    sgf.open(input('SGF filename: '))
     boards = []
     moves = []
     count = 0
@@ -19,10 +19,14 @@ def trainSGF():
         moves.append((move[0], move[1]))
         board.move(move[0], move[1], move[2])
         count += 1
-    for _ in range(100):
+    loadfilename = input('Load filename: ')
+    if loadfilename != '':
+        network.load(loadfilename)
+    for _ in range(int(input('Times to train: '))):
         for i in range(count // 50):
             network.train(boards[i * 50:i * 50 + 50], moves[i * 50:i * 50 + 50], 10)
             print(network.lossAndAccuracy(boards[i * 50:i * 50 + 50], moves[i * 50:i * 50 + 50]))
+    network.save(input('Save filename: '))
 
 if __name__ == '__main__':
     trainSGF()
