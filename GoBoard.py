@@ -12,7 +12,7 @@ class GoBoard(object):
     white = -1
     featureCount = 22
     printDic = {space : '.', black : 'B', white : 'W'}
-    colorDic = {space : Fore.WHITE + Style.BRIGHT, black : Fore.RED + Style.BRIGHT, white : Fore.WHITE + Style.BRIGHT, 'reset' : Style.RESET_ALL}
+    colorDic = {space : Fore.WHITE + Style.BRIGHT, black : Fore.RED + Style.BRIGHT, white : Fore.WHITE + Style.BRIGHT, 'last' : Fore.CYAN + Style.BRIGHT, 'reset' : Style.RESET_ALL}
     dxdy = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
     def __init__(self, size = 19):
@@ -21,6 +21,7 @@ class GoBoard(object):
             raise Exception("GoBoard: __init__: error: invalid size")
         self.__size = size
         self.__twoHistory = [None] * 2
+        self.__lastMove = None
         self.__nextColor = GoBoard.black
         self.__boardList = self.getEmptyBoardList()
 
@@ -74,7 +75,10 @@ class GoBoard(object):
         for i in range(self.__size):
             print(GoBoard.colorDic[GoBoard.space] + '|', end = ' ')
             for j in range(self.__size):
-                print(GoBoard.colorDic[self.__boardList[i][j]] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
+                if self.__lastMove == (i, j):
+                    print(GoBoard.colorDic['last'] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
+                else:
+                    print(GoBoard.colorDic[self.__boardList[i][j]] + GoBoard.printDic[self.__boardList[i][j]], end = ' ')
             print(GoBoard.colorDic[GoBoard.space] + '|')
         print(GoBoard.colorDic[GoBoard.space] + '+' + '-' * (self.__size * 2 + 1) + '+' + Style.RESET_ALL)
 
@@ -199,6 +203,7 @@ class GoBoard(object):
                 self.capture()
                 self.__twoHistory[0], self.__twoHistory[1] = self.__twoHistory[1], self.hash()
                 self.__nextColor = - color
+                self.__lastMove = (x, y)
                 return
         tempBoard = GoBoard(self.__size)
         tempBoard.setBoardList(self.__boardList)
@@ -211,6 +216,7 @@ class GoBoard(object):
         self.__boardList = tempBoard.getBoardList()
         self.__twoHistory[0], self.__twoHistory[1] = self.__twoHistory[1], self.hash()
         self.__nextColor = - color
+        self.__lastMove = (x, y)
 
     def isValidBoardList(self, boardList):
         if not isinstance(boardList, list) or len(boardList) != self.__size:
