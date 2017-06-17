@@ -21,8 +21,8 @@ class SGFParser(object):
         self.__moves = []
         self.__index = 0
         if not isinstance(filename, str):
-            raise Exception("SGFParser: open: error: invalid filename")
-        with open(filename, "r") as f:
+            raise Exception('SGFParser: open: error: invalid filename')
+        with open(filename, 'r') as f:
             self.__moves = [s for s in f.read().split(';') if s[0] == 'B' or s[0] == 'W']
         self.__index = 0
 
@@ -51,12 +51,10 @@ class SGFParser(object):
             return (SGFParser.spotDic[move[3]], SGFParser.spotDic[move[2]], color)
 
     def hasNextMove(self):
-        if not self.__opened:
-            return False
         return self.__index < len(self.__moves)
 
 def test():
-    sgf = SGFParser(input("Filename: "))
+    sgf = SGFParser(input('Filename: '))
     board = gb()
     while sgf.hasNextMove():
         move = sgf.getNextMove()

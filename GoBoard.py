@@ -18,7 +18,7 @@ class GoBoard(object):
     def __init__(self, size = 19):
         init()
         if not isinstance(size, int) or size <= 0:
-            raise Exception("GoBoard: __init__: error: invalid size")
+            raise Exception('GoBoard: __init__: error: invalid size')
         self.__size = size
         self.__twoHistory = [None] * 2
         self.__lastMove = None
@@ -27,14 +27,14 @@ class GoBoard(object):
 
     def save(self, filename):
         if not isinstance(filename, str):
-            raise Exception("GoBoard: save: error: invalid filename")
-        with open(filename, "wb") as f:
+            raise Exception('GoBoard: save: error: invalid filename')
+        with open(filename, 'wb') as f:
             dump(self.__dict__, f, 2)
 
     def load(self, filename):
         if not isinstance(filename, str):
-            raise Exception("GoBoard: load: error: invalid filename")
-        with open(filename, "rb") as f:
+            raise Exception('GoBoard: load: error: invalid filename')
+        with open(filename, 'rb') as f:
             self.__dict__.update(load(f))
 
     def getNextColor(self):
@@ -48,7 +48,7 @@ class GoBoard(object):
 
     def setBoardList(self, boardList):
         if not self.isValidBoardList(boardList):
-            raise Exception("GoBoard: setBoardList: error: invalid boardList")
+            raise Exception('GoBoard: setBoardList: error: invalid boardList')
         self.__boardList = deepcopy(boardList)
 
     def getBoardList(self):
@@ -56,18 +56,18 @@ class GoBoard(object):
 
     def setSpot(self, x, y, value):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            raise Exception("GoBoard: setSpot: error: invalid x coordinate")
+            raise Exception('GoBoard: setSpot: error: invalid x coordinate')
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            raise Exception("GoBoard: setSpot: error: invalid y coordinate")
+            raise Exception('GoBoard: setSpot: error: invalid y coordinate')
         if not isinstance(value, int) or not GoBoard.white <= value <= GoBoard.black:
-            raise Exception("GoBoard: setSpot: error: invalid value")
+            raise Exception('GoBoard: setSpot: error: invalid value')
         self.__boardList[x][y] = value
 
     def getSpot(self, x, y):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            raise Exception("GoBoard: getSpot: error: invalid x coordinate")
+            raise Exception('GoBoard: getSpot: error: invalid x coordinate')
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            raise Exception("GoBoard: getSpot: error: invalid y coordinate")
+            raise Exception('GoBoard: getSpot: error: invalid y coordinate')
         return self.__boardList[x][y]
 
     def printBoard(self):
@@ -91,7 +91,7 @@ class GoBoard(object):
 
     def setBoardListFromHash(self, h):
         if not isinstance(h, int):
-            raise Exception("GoBoard: setBoardListFromHash: error: invalid hash")
+            raise Exception('GoBoard: setBoardListFromHash: error: invalid hash')
         s = ''
         while h > 0:
             s = str(h % 3) + s
@@ -99,16 +99,16 @@ class GoBoard(object):
         if len(s) < self.__size ** 2:
             s = '0' * (self.__size ** 2 - len(s)) + s
         elif len(s) > self.__size ** 2:
-            raise Exception("GoBoard: setBoardListFromHash: error: invalid hash")
+            raise Exception('GoBoard: setBoardListFromHash: error: invalid hash')
         for i in range(self.__size):
             for j in range(self.__size):
                 self.__boardList[i][j] = int(s[i * self.__size + j]) - 1
 
     def bfsFloodFill(self, x, y):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            raise Exception("GoBoard: bfsFloodFill: error: invalid x coordinate")
+            raise Exception('GoBoard: bfsFloodFill: error: invalid x coordinate')
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            raise Exception("GoBoard: bfsFloodFill: error: invalid y coordinate")
+            raise Exception('GoBoard: bfsFloodFill: error: invalid y coordinate')
         color = self.__boardList[x][y]
         if color == GoBoard.space:
             return ([], [])
@@ -156,7 +156,7 @@ class GoBoard(object):
             for spot in god[0]:
                 mat[spot[0]][spot[1]] = 0
         elif exception != None:
-            raise Exception("GoBoard: captureSpot: error: invalid exception")
+            raise Exception('GoBoard: captureSpot: error: invalid exception')
         for i in range(self.__size):
             for j in range(self.__size):
                 if mat[i][j] == 1:
@@ -188,13 +188,13 @@ class GoBoard(object):
 
     def move(self, x, y, color):
         if not isinstance(x, int) or not 0 <= x < self.__size:
-            raise Exception("GoBoard: move: error: invalid x coordinate")
+            raise Exception('GoBoard: move: error: invalid x coordinate')
         if not isinstance(y, int) or not 0 <= y < self.__size:
-            raise Exception("GoBoard: move: error: invalid y coordinate")
+            raise Exception('GoBoard: move: error: invalid y coordinate')
         if not isinstance(color, int) or color != GoBoard.white and color != GoBoard.black:
-            raise Exception("GoBoard: move: error: invalid color")
+            raise Exception('GoBoard: move: error: invalid color')
         if self.__boardList[x][y] != GoBoard.space:
-            raise Exception("GoBoard: move: error: occupied spot")
+            raise Exception('GoBoard: move: error: occupied spot')
         for k in GoBoard.dxdy:
             i = x + k[0]
             j = y + k[1]
@@ -210,9 +210,9 @@ class GoBoard(object):
         tempBoard.setSpot(x, y, color)
         tempBoard.capture((x, y))
         if len(tempBoard.bfsFloodFill(x, y)[1]) == 0:
-            raise Exception("GoBoard: move: error: invalid move")
+            raise Exception('GoBoard: move: error: invalid move')
         if self.__twoHistory[0] == tempBoard.hash():
-            raise Exception("GoBoard: move: error: reappeared state")
+            raise Exception('GoBoard: move: error: reappeared state')
         self.__boardList = tempBoard.getBoardList()
         self.__twoHistory[0], self.__twoHistory[1] = self.__twoHistory[1], self.hash()
         self.__nextColor = - color
@@ -234,7 +234,7 @@ class GoBoard(object):
 
     def featureColor(self, color):
         if not isinstance(color, int) or not GoBoard.white <= color <= GoBoard.black:
-            raise Exception("GoBoard: featureColor: error: invalid color")
+            raise Exception('GoBoard: featureColor: error: invalid color')
         ret = self.getEmptyBoardList()
         for i in range(self.__size):
             for j in range(self.__size):
@@ -358,9 +358,9 @@ def test():
         color = board.getNextColor()
         board.printBoard()
         if color == GoBoard.black:
-            print("Black's turn")
+            print('Black's turn')
         else:
-            print("White's turn")
+            print('White's turn')
         x = input('x: ')
         y = input('y: ')
         if x == '' and y == '':
@@ -375,7 +375,7 @@ def test():
             if hasattr(board, 'feature' + feature):
                 rPrint(getattr(board, 'feature' + feature)())
             else:
-                print("Feature not found!")
+                print('Feature not found!')
 
 if __name__ == '__main__':
     test()
