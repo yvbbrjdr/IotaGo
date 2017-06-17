@@ -358,9 +358,9 @@ def test():
         color = board.getNextColor()
         board.printBoard()
         if color == GoBoard.black:
-            print('Black's turn')
+            print('Black\'s turn')
         else:
-            print('White's turn')
+            print('White\'s turn')
         x = input('x: ')
         y = input('y: ')
         if x == '' and y == '':
