@@ -12,23 +12,35 @@ class SGFParser(object):
     }
 
     def __init__(self, filename = None):
-        self.__opened = False
+        self.__moves = []
+        self.__index = 0
         if filename != None:
             self.open(filename)
 
     def open(self, filename):
+        self.__moves = []
+        self.__index = 0
         if not isinstance(filename, str):
-            self.__opened = False
             raise Exception("SGFParser: open: error: invalid filename")
         with open(filename, "r") as f:
             self.__moves = [s for s in f.read().split(';') if s[0] == 'B' or s[0] == 'W']
-        self.__opened = True
         self.__index = 0
+
+    def moveCount(self):
+        return len(self.__moves)
+
+    def getIndex(self):
+        return self.__index
+
+    def setIndex(self, index):
+        if not isinstance(index, int) or not 0 <= index < len(self.__moves):
+            raise Exception('SGFParser: setIndex: error: invalid index')
+        self.__index = index
 
     def getNextMove(self):
         while True:
             if not self.hasNextMove():
-                return False
+                raise Exception('SGFParser: getNextMove: error: out of moves')
             move = self.__moves[self.__index]
             self.__index += 1
             color = gb.black
