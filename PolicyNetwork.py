@@ -8,24 +8,28 @@ from time import time
 
 class PolicyNetwork(object):
 
-    filterCount = 256
-    filterSize = 3
-    layerCount = 13
-
-    def __init__(self, size = 19):
+    def __init__(self, size = 19, layerCount = 13, filterCount = 256, filterSize = 3, learningRate = 0.001):
         if not isinstance(size, int) or size <= 0:
             raise Exception('PolicyNetwork: __init__: error: invalid size')
+        if not isinstance(layerCount, int) or layerCount < 2:
+            raise Exception('PolicyNetwork: __init__: error: invalid layerCount')
+        if not isinstance(filterCount, int) or filterCount <= 0:
+            raise Exception('PolicyNetwork: __init__: error: invalid filterCount')
+        if not isinstance(filterSize, int) or not 0 < filterSize <= size:
+            raise Exception('PolicyNetwork: __init__: error: invalid filterSize')
+        if not isinstance(learningRate, float) or learningRate <= 0:
+            raise Exception('PolicyNetwork: __init__: error: invalid learningRate')
         self.__size = size
         self.__x = tf.placeholder(tf.float32, shape = [None, size, size, gb.featureCount])
         self.__y_ = tf.placeholder(tf.float32, shape = [None, size ** 2])
-        self.__y = PolicyNetwork.conv2d(self.__x, PolicyNetwork.filterCount, 5)
-        for _ in range(PolicyNetwork.layerCount - 2):
-            self.__y = PolicyNetwork.conv2d(self.__y, PolicyNetwork.filterCount, PolicyNetwork.filterSize)
-        self.__y = PolicyNetwork.conv2d(self.__y, 1, PolicyNetwork.filterSize)
+        self.__y = PolicyNetwork.conv2d(self.__x, filterCount, 5)
+        for _ in range(layerCount - 2):
+            self.__y = PolicyNetwork.conv2d(self.__y, filterCount, filterSize)
+        self.__y = PolicyNetwork.conv2d(self.__y, 1, filterSize)
         self.__rawY = tf.reshape(self.__y, [-1, size ** 2])
         self.__y = tf.nn.softmax(self.__rawY)
         self.__loss = tf.losses.softmax_cross_entropy(onehot_labels = self.__y_, logits = self.__rawY)
-        self.__train = tf.contrib.layers.optimize_loss(loss = self.__loss, global_step = tf.contrib.framework.get_global_step(), learning_rate = 0.001, optimizer = "SGD")
+        self.__train = tf.contrib.layers.optimize_loss(loss = self.__loss, global_step = tf.contrib.framework.get_global_step(), learning_rate = learningRate, optimizer = "SGD")
         correct_prediction = tf.equal(tf.argmax(self.__y, 1), tf.argmax(self.__y_, 1))
         self.__accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         self.__sess = tf.Session()
@@ -85,12 +89,14 @@ def test():
     board1 = gb()
     board2 = gb()
     board2.move(3, 3, gb.black)
-    network = PolicyNetwork()
+    network = PolicyNetwork(layerCount = int(input('layerCount: ')), filterCount = int(input('filterCount: ')), learningRate = float(input('learningRate: ')))
     t0 = time()
     print('Initial Loss and Accuracy:', network.lossAndAccuracy([board1, board2], [(3, 3), (15, 15)]), 'Time:', time() - t0)
     for i in range(100):
         network.train([board1, board2], [(3, 3), (15, 15)], 10)
         print('Step:', i * 10 + 10, 'Loss and Accuracy:', network.lossAndAccuracy([board1, board2], [(3, 3), (15, 15)]), 'Time:', time() - t0)
+    infer = network.inference([board1, board2])
+    print(infer[0][3][3], infer[1][15][15])
 
 if __name__ == '__main__':
     test()
