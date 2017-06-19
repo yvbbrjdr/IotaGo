@@ -5,6 +5,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import tensorflow as tf
 from GoBoard import GoBoard as gb
 from time import time
+from SGFParser import SGFParser as sp
+from copy import deepcopy
 
 class PolicyNetwork(object):
 
@@ -30,8 +32,8 @@ class PolicyNetwork(object):
         self.__y = tf.nn.softmax(self.__rawY)
         self.__loss = tf.losses.softmax_cross_entropy(onehot_labels = self.__y_, logits = self.__rawY)
         self.__train = tf.contrib.layers.optimize_loss(loss = self.__loss, global_step = tf.contrib.framework.get_global_step(), learning_rate = learningRate, optimizer = "SGD")
-        correct_prediction = tf.equal(tf.argmax(self.__y, 1), tf.argmax(self.__y_, 1))
-        self.__accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        correctPrediction = tf.equal(tf.argmax(self.__y, 1), tf.argmax(self.__y_, 1))
+        self.__accuracy = tf.reduce_mean(tf.cast(correctPrediction, tf.float32))
         self.__sess = tf.Session()
         self.__sess.run(tf.global_variables_initializer())
 
@@ -70,33 +72,75 @@ class PolicyNetwork(object):
     def inference(self, boards):
         return self.__sess.run(self.__y, {self.__x : self.getInput(boards, [])[0]}).reshape([-1, self.__size, self.__size]).tolist()
 
-    def train(self, boards, moves, times = 1):
+    def train(self, boards, moves, batchSize = 50, times = 1):
+        if not isinstance(batchSize, int) or batchSize <= 0:
+            raise Exception('PolicyNetwork: train: error: invalid batchSize')
         if not isinstance(times, int) or times <= 0:
             raise Exception('PolicyNetwork: train: error: invalid times')
+        moveCount = min(len(boards), len(moves))
+        batchCount = moveCount // batchSize
+        if moveCount % batchSize > 0:
+            batchCount += 1
+        print('Start to train %d move(s) %d time(s) with batch size %d and batch count %d\n    Extracting features. . . ' % (moveCount, times, batchSize, batchCount), end = '', flush = True)
+        t0 = time()
         inputs = self.getInput(boards, moves)
-        for _ in range(times):
-            self.__sess.run(self.__train, {self.__x : inputs[0], self.__y_ : inputs[1]})
+        print('done in %f second(s)' % (time() - t0))
+        for i in range(times):
+            print('    Training #%d. . . ' % (i + 1))
+            t00 = time()
+            for j in range(batchCount):
+                print('        Training batch #%d. . . ' % (j + 1), end = '', flush = True)
+                t000 = time()
+                self.__sess.run(self.__train, {self.__x : inputs[0][j * batchSize : j * batchSize + batchSize], self.__y_ : inputs[1][j * batchSize : j * batchSize + batchSize]})
+                print('done in %f second(s)' % (time() - t000))
+            print('    #%d trained in %f second(s)' % (i + 1, time() - t00))
+        laa = self.__sess.run([self.__loss, self.__accuracy], {self.__x : inputs[0], self.__y_ : inputs[1]})
+        print('Training ended in %f second(s) with loss %f and accuracy %f' % (time() - t0, laa[0], laa[1]))
 
     def lossAndAccuracy(self, boards, moves):
         inputs = self.getInput(boards, moves)
-        return (self.__sess.run([self.__loss, self.__accuracy], {self.__x : inputs[0], self.__y_ : inputs[1]}))
+        return self.__sess.run([self.__loss, self.__accuracy], {self.__x : inputs[0], self.__y_ : inputs[1]})
+
+    def trainSGF(self, filename, batchSize = 50, times = 10):
+        if not isinstance(filename, str):
+            raise Exception('PolicyNetwork: trainSGF: error: invalid filename')
+        if not isinstance(batchSize, int) or batchSize <= 0:
+            raise Exception('PolicyNetwork: trainSGF: error: invalid batchSize')
+        if not isinstance(times, int) or times <= 0:
+            raise Exception('PolicyNetwork: trainSGF: error: invalid times')
+        board = gb(self.getSize())
+        sgf = sp(filename)
+        boards = []
+        moves = []
+        while sgf.hasNextMove():
+            move = sgf.getNextMove()
+            boards.append(deepcopy(board))
+            moves.append((move[0], move[1]))
+            board.move(move[0], move[1], move[2])
+        self.train(boards, moves, batchSize, times)
+
+    def trainFolder(self, path, batchSize = 50, times = 10):
+        if not isinstance(path, str):
+            raise Exception('PolicyNetwork: trainFolder: error: invalid path')
+        if not isinstance(batchSize, int) or batchSize <= 0:
+            raise Exception('PolicyNetwork: trainFolder: error: invalid batchSize')
+        if not isinstance(times, int) or times <= 0:
+            raise Exception('PolicyNetwork: trainFolder: error: invalid times')
+        for parent, _, filenames in os.walk(path):
+            for filename in filenames:
+                if filename[-4:] == '.sgf':
+                    join = os.path.join(parent,filename)
+                    print('Start to train %s' % (join))
+                    try:
+                        self.trainSGF(join, batchSize, times)
+                    except:
+                        print('Training ended with error')
+                        continue
+                    print('Training ended')
 
     @staticmethod
     def conv2d(inputs, filters, kernel_size):
         return tf.layers.conv2d(inputs = inputs, filters = filters, kernel_size = [kernel_size, kernel_size], padding = 'same', activation = tf.nn.elu)
 
-def test():
-    board1 = gb()
-    board2 = gb()
-    board2.move(3, 3, gb.black)
-    network = PolicyNetwork(layerCount = int(input('layerCount: ')), filterCount = int(input('filterCount: ')), learningRate = float(input('learningRate: ')))
-    t0 = time()
-    print('Initial Loss and Accuracy:', network.lossAndAccuracy([board1, board2], [(3, 3), (15, 15)]), 'Time:', time() - t0)
-    for i in range(100):
-        network.train([board1, board2], [(3, 3), (15, 15)], 10)
-        print('Step:', i * 10 + 10, 'Loss and Accuracy:', network.lossAndAccuracy([board1, board2], [(3, 3), (15, 15)]), 'Time:', time() - t0)
-    infer = network.inference([board1, board2])
-    print(infer[0][3][3], infer[1][15][15])
-
 if __name__ == '__main__':
-    test()
+    PolicyNetwork(layerCount = int(input('layerCount: ')), filterCount = int(input('filterCount: ')), learningRate = float(input('learningRate: '))).trainFolder(input('Train Folder: '), times = int(input('Times: ')))

@@ -26,17 +26,6 @@ class SGFParser(object):
             self.__moves = [s for s in f.read().split(';') if s[0] == 'B' or s[0] == 'W']
         self.__index = 0
 
-    def moveCount(self):
-        return len(self.__moves)
-
-    def getIndex(self):
-        return self.__index
-
-    def setIndex(self, index):
-        if not isinstance(index, int) or not 0 <= index < len(self.__moves):
-            raise Exception('SGFParser: setIndex: error: invalid index')
-        self.__index = index
-
     def getNextMove(self):
         while True:
             if not self.hasNextMove():
