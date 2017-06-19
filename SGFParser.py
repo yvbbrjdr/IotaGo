@@ -24,7 +24,6 @@ class SGFParser(object):
             raise Exception('SGFParser: open: error: invalid filename')
         with open(filename, 'r') as f:
             self.__moves = [s for s in f.read().split(';') if s[0] == 'B' or s[0] == 'W']
-        self.__index = 0
 
     def getNextMove(self):
         while True:
