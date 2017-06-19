@@ -116,7 +116,11 @@ class PolicyNetwork(object):
             move = sgf.getNextMove()
             boards.append(deepcopy(board))
             moves.append((move[0], move[1]))
-            board.move(move[0], move[1], move[2])
+            try:
+                board.move(move[0], move[1], move[2])
+            except:
+                print('Reaching invalid move')
+                return
         self.train(boards, moves, batchSize, times)
 
     def trainFolder(self, path, batchSize = 50, times = 10):
@@ -126,17 +130,17 @@ class PolicyNetwork(object):
             raise Exception('PolicyNetwork: trainFolder: error: invalid batchSize')
         if not isinstance(times, int) or times <= 0:
             raise Exception('PolicyNetwork: trainFolder: error: invalid times')
-        for parent, _, filenames in os.walk(path):
-            for filename in filenames:
-                if filename[-4:] == '.sgf':
-                    join = os.path.join(parent,filename)
-                    print('Start to train %s' % (join))
-                    try:
+        try:
+            for parent, _, filenames in os.walk(path):
+                for filename in filenames:
+                    if filename[-4:] == '.sgf':
+                        join = os.path.join(parent,filename)
+                        print('Start to train %s' % (join))
                         self.trainSGF(join, batchSize, times)
-                    except:
-                        print('Training ended with error')
-                        continue
-                    print('Training ended')
+                        print('Training ended')
+        except KeyboardInterrupt:
+            print('Training ended by keyboard')
+            return
 
     @staticmethod
     def conv2d(inputs, filters, kernel_size):

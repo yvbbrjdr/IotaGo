@@ -23,20 +23,17 @@ class SGFParser(object):
         if not isinstance(filename, str):
             raise Exception('SGFParser: open: error: invalid filename')
         with open(filename, 'r') as f:
-            self.__moves = [s for s in f.read().split(';') if s[0] == 'B' or s[0] == 'W']
+            self.__moves = [s for s in f.read().split(';') if len(s) >= 5 and (s[0] == 'B' or s[0] == 'W') and s[2] in SGFParser.spotDic and s[3] in SGFParser.spotDic]
 
     def getNextMove(self):
-        while True:
-            if not self.hasNextMove():
-                raise Exception('SGFParser: getNextMove: error: out of moves')
-            move = self.__moves[self.__index]
-            self.__index += 1
-            color = gb.black
-            if move[0] == 'W':
-                color = gb.white
-            if move[2] not in SGFParser.spotDic or move[3] not in SGFParser.spotDic:
-                continue
-            return (SGFParser.spotDic[move[3]], SGFParser.spotDic[move[2]], color)
+        if not self.hasNextMove():
+            raise Exception('SGFParser: getNextMove: error: out of moves')
+        move = self.__moves[self.__index]
+        self.__index += 1
+        color = gb.black
+        if move[0] == 'W':
+            color = gb.white
+        return (SGFParser.spotDic[move[3]], SGFParser.spotDic[move[2]], color)
 
     def hasNextMove(self):
         return self.__index < len(self.__moves)
