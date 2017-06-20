@@ -3,7 +3,7 @@
 from copy import deepcopy
 from queue import Queue
 from pickle import dump, load
-from colorama import init, Fore, Style
+from colorama import Fore, Style
 
 class GoBoard(object):
 

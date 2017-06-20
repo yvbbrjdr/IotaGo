@@ -81,10 +81,12 @@ class PolicyNetwork(object):
         batchCount = moveCount // batchSize
         if moveCount % batchSize > 0:
             batchCount += 1
-        print('Start to train %d move(s) %d time(s) with batch size %d and batch count %d\n    Extracting features. . . ' % (moveCount, times, batchSize, batchCount), end = '', flush = True)
+        print('Start to train %d move(s) %d time(s) with batch size %d and batch count %d\nExtracting features. . . ' % (moveCount, times, batchSize, batchCount), end = '', flush = True)
         t0 = time()
         inputs = self.getInput(boards, moves)
         print('done in %f second(s)' % (time() - t0))
+        laa = self.__sess.run([self.__loss, self.__accuracy], {self.__x : inputs[0], self.__y_ : inputs[1]})
+        print('Training started with loss %f and accuracy %f' % (laa[0], laa[1]))
         for i in range(times):
             print('    Training #%d. . . ' % (i + 1))
             t00 = time()

@@ -2,50 +2,95 @@
 
 from GoBoard import GoBoard as gb
 from PolicyNetwork import PolicyNetwork as pn
+from copy import deepcopy
+
+def inputType(prompt, typename):
+    while True:
+        try:
+            x = typename(input(prompt))
+            return x
+        except:
+            print('inputType: error: invalid input')
 
 def main():
     print('Welcome to IotaGo')
-    network = pn(layerCount = int(input('layerCount: ')), filterCount = int(input('filterCount: ')), learningRate = float(input('learningRate: ')))
+    while True:
+        try:
+            network = pn(layerCount = inputType('layerCount: ', int), filterCount = inputType('filterCount: ', int), learningRate = inputType('learningRate: ', float))
+            break
+        except:
+            print('main: error: invalid network parameters')
     while True:
         command = input('[l]oad [s]ave [t]rainFolder [i]nference [e]xit\n')
         if command == 'l':
-            network.load(input('Filename: '))
+            try:
+                network.load(input('Filename: '))
+            except:
+                print('main: error: load failed')
         elif command == 's':
-            network.save(input('Filename: '))
+            try:
+                network.save(input('Filename: '))
+            except:
+                print('main: error: save failed')
         elif command == 't':
-            network.trainFolder(input('Path: '), times = int(input('Times: ')))
+            try:
+                network.trainFolder(input('Path: '), times = inputType('Times: ', int))
+            except:
+                print('main: error: train failed')
         elif command == 'i':
-            board = gb()
+            boards = [gb()]
             while True:
+                board = deepcopy(boards[-1])
                 color = board.getNextColor()
                 board.printBoard()
                 if color == gb.black:
                     print('Black\'s turn')
                 else:
                     print('White\'s turn')
-                command = input('[l]oad [s]ave [m]ove [sk]ip [i]nference [e]xit\n')
+                command = input('[l]oad [s]ave [b]ack [m]ove [sk]ip [i]nference [e]xit\n')
                 if command == 'l':
-                    board.load(input('Filename: '))
+                    try:
+                        board.load(input('Filename: '))
+                        boards.append(board)
+                    except:
+                        print('main: error: load failed')
                 elif command == 's':
-                    board.save(input('Filename: '))
+                    try:
+                        board.save(input('Filename: '))
+                    except:
+                        print('main: error: save failed')
+                elif command == 'b':
+                    if len(boards) > 1:
+                        del boards[-1]
+                    else:
+                        print('main: error: unable to go back anymore')
                 elif command == 'm':
-                    x = input('x: ')
-                    y = input('y: ')
-                    board.move(int(x), int(y), color)
+                    try:
+                        board.move(int(input('x: ')), int(input('y: ')), color)
+                        boards.append(board)
+                    except:
+                        print('main: error: invalid move')
                 elif command == 'sk':
                     board.skip()
+                    boards.append(board)
                 elif command == 'i':
                     infer = network.inference([board])[0]
                     m = - 1.0
                     mx = 0
                     my = 0
+                    ok = False
                     for i in range(network.getSize()):
                         for j in range(network.getSize()):
                             if infer[i][j] > m and board.isValidMove(i, j, color):
                                 m = infer[i][j]
                                 mx = i
                                 my = j
-                    board.move(mx, my, color)
+                                ok = True
+                    if ok:
+                        board.move(mx, my, color)
+                        boards.append(board)
+                    else:
+                        print('pass')
                 elif command == 'e':
                     break
         elif command == 'e':
