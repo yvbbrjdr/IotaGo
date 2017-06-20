@@ -85,6 +85,8 @@ class PolicyNetwork(object):
         t0 = time()
         inputs = self.getInput(boards, moves)
         print('done in %f second(s)' % (time() - t0))
+        if moveCount == 0:
+            return
         laa = self.__sess.run([self.__loss, self.__accuracy], {self.__x : inputs[0], self.__y_ : inputs[1]})
         print('Training started with loss %f and accuracy %f' % (laa[0], laa[1]))
         for i in range(times):
